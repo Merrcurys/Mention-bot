@@ -39,7 +39,7 @@ async def help_command(message: types.Message):
 
 2. /all, /here, /everyone – позвать всех пользователей. 
 
-3. /mentions_toggle - тумблер включения и выключения.
+3. /mentions_toggle - тумблер прав доступа к оповещениям.
 
 тех.поддержка - @merrcurys
 version: 2.0
