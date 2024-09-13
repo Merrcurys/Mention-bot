@@ -1,32 +1,10 @@
 import asyncio
-import logging
 
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message
 
-from database import BotDatabase
-from decouple import config
+from loader import app, db, logger, ADMIN_CHAT_ID
 
-
-# получение конфигурационных переменных из .env файла
-API_TOKEN = config("API_TOKEN")
-BOT_ID = int(config("BOT_ID"))
-API_ID = config("API_ID")
-API_HASH = config("API_HASH")
-ADMIN_CHAT_ID = int(config("ADMIN_CHAT_ID"))
-AWAIT = 10 # задержка между использованием команды
-
-# настройка логгирования
-logging.basicConfig(
-    level=logging.ERROR, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
-
-# создание экземпляра бота и диспетчера для обработки сообщений
-app = Client("bot", api_hash=API_HASH, api_id=API_ID, bot_token=API_TOKEN)
-
-# инициализация экземпляра базы данных
-db = BotDatabase()
 
 # словарь для хранения "замороженных" команд
 frozen_commands = {}
@@ -53,7 +31,9 @@ version: 3.0
 
 # --------функция оповещения--------
 # обработчик команд для оповещения всех пользователей
-@app.on_message(filters.command(["all", "here", "everyone"]) & (filters.group | filters.private))
+@app.on_message(
+    filters.command(["all", "here", "everyone"]) & (filters.group | filters.private)
+)
 async def call_all_users(client: Client, message: Message):
     # получаем список администраторов чата
     chat_admins = [
@@ -67,11 +47,13 @@ async def call_all_users(client: Client, message: Message):
     # проверяем наличие прав доступа к команде
     if db.get_position_tb(message.chat.id)[0] or message.from_user.id in admins:
         if message.chat.id in frozen_commands:
-            await message.reply("Эту команду нельзя использовать чаще чем один раз в минуту.")
+            await message.reply(
+                "Эту команду нельзя использовать чаще чем один раз в минуту."
+            )
         else:
             await send_user_links(message)
             frozen_commands[message.chat.id] = True
-            await asyncio.sleep(AWAIT)  # Задержка в 60 секунд
+            await asyncio.sleep(60)  # Задержка в 60 секунд
             del frozen_commands[message.chat.id]
     else:
         await message.reply("Только администраторы могут использовать данную команду.")
@@ -88,14 +70,16 @@ async def send_user_links(message: Message):
         # отправляем сообщение каждые 5 пользователей
         if len(link_users) == 5:
             await message.reply(
-                f"Важная информация!{''.join(link_users)}", parse_mode=enums.ParseMode.MARKDOWN
+                f"Важная информация!{''.join(link_users)}",
+                parse_mode=enums.ParseMode.MARKDOWN,
             )
             link_users = []
 
     # отправляем оставшихся пользователей, если они есть
     if link_users:
         await message.reply(
-            f"Важная информация!{''.join(link_users)}", parse_mode=enums.ParseMode.MARKDOWN
+            f"Важная информация!{''.join(link_users)}",
+            parse_mode=enums.ParseMode.MARKDOWN,
         )
 
 
@@ -127,9 +111,11 @@ async def toggle_mention_notifications(client: Client, message: Message):
 
 
 async def error_handler(update, exception):
-    logger.error(f'Update {update} caused error: {exception}')
+    logger.error(f"Update {update} caused error: {exception}")
     # отправляем сообщение об ошибке в админский чат
-    await app.send_message(ADMIN_CHAT_ID, f'ПРОИЗОШЛА ОШИБКА\n\n{update}\n\n<{exception}>')
+    await app.send_message(
+        ADMIN_CHAT_ID, f"ПРОИЗОШЛА ОШИБКА\n\n{update}\n\n<{exception}>"
+    )
 
 
 app.run()
