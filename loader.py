@@ -1,11 +1,8 @@
-import asyncio
 import logging
 
-from pyrogram import Client, filters, enums
-from pyrogram.types import Message
-
-from database import BotDatabase
+from peewee import SqliteDatabase
 from decouple import config
+from pyrogram import Client
 
 
 # получение конфигурационных переменных из .env файла
@@ -25,4 +22,7 @@ logger = logging.getLogger(__name__)
 app = Client("bot", api_hash=API_HASH, api_id=API_ID, bot_token=API_TOKEN)
 
 # инициализация экземпляра базы данных
-db = BotDatabase()
+database = SqliteDatabase(
+    "database.sqlite3",
+    pragmas={"foreign_keys": 1},
+)

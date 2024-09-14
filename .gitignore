@@ -164,4 +164,5 @@ cython_debug/
 *.session
 *.session-journal
 *.db
+*.sqlite3
 *.env
