@@ -32,7 +32,7 @@ version: 3.0
 # --------функция оповещения--------
 # обработчик команд для оповещения всех пользователей
 @app.on_message(
-    filters.command(["all", "here", "everyone"]) & (filters.group | filters.private)
+    filters.command(["all", "here", "everyone"]) & filters.group
 )
 async def call_all_users(client: Client, message: Message):
     # получаем список администраторов чата
