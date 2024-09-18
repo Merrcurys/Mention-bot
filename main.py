@@ -5,16 +5,11 @@ from pyrogram.types import Message
 
 from loader import app, logger, ADMIN_CHAT_ID, database
 from models.models import ChatConfig
-
+from models.utils import create_table_if_not_exists
 
 # словарь для хранения "замороженных" команд
 database.create_tables([ChatConfig])
 frozen_commands = {}
-
-
-def create_table_if_not_exists(chat_id: int):
-    if not ChatConfig.select().where(ChatConfig.chat_id == chat_id).exists():
-        ChatConfig.create(chat_id=chat_id)
 
 
 @app.on_message(
