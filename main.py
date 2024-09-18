@@ -37,33 +37,39 @@ version: 3.0
 # обработчик команд для оповещения всех пользователей
 @app.on_message(filters.command(["all", "here", "everyone"]) & filters.group)
 async def call_all_users(client: Client, message: Message):
-    create_table_if_not_exists(chat_id=message.chat.id)
+    try:
+        create_table_if_not_exists(chat_id=message.chat.id)
 
-    # получаем список администраторов чата
-    chat_admins = [
-        admin
-        async for admin in app.get_chat_members(
-            message.chat.id, filter=enums.ChatMembersFilter.ADMINISTRATORS
-        )
-    ]
-    admins = [admin.user.id for admin in chat_admins]
-
-    # проверяем наличие прав доступа к команде
-    if (
-        not ChatConfig.get(ChatConfig.chat_id == message.chat.id).need_access
-        or message.from_user.id in admins
-    ):
-        if message.chat.id in frozen_commands:
-            await message.reply(
-                "Эту команду нельзя использовать чаще чем один раз в минуту."
+        # получаем список администраторов чата
+        chat_admins = [
+            admin
+            async for admin in app.get_chat_members(
+                message.chat.id, filter=enums.ChatMembersFilter.ADMINISTRATORS
             )
+        ]
+        admins = [admin.user.id for admin in chat_admins]
+
+        # проверяем наличие прав доступа к команде
+        if (
+            not ChatConfig.get(ChatConfig.chat_id == message.chat.id).need_access
+            or message.from_user.id in admins
+        ):
+            if message.chat.id in frozen_commands:
+                await message.reply(
+                    "Эту команду нельзя использовать чаще чем один раз в минуту."
+                )
+            else:
+                await send_user_links(message)
+                frozen_commands[message.chat.id] = True
+                await asyncio.sleep(10)  # Задержка в 60 секунд
+                del frozen_commands[message.chat.id]
         else:
-            await send_user_links(message)
-            frozen_commands[message.chat.id] = True
-            await asyncio.sleep(10)  # Задержка в 60 секунд
-            del frozen_commands[message.chat.id]
-    else:
-        await message.reply("Только администраторы могут использовать данную команду.")
+            await message.reply(
+                "Только администраторы могут использовать данную команду."
+            )
+    except Exception as e:
+        logger.error(f"Произошла ошибка: {e}")
+        await app.send_message(ADMIN_CHAT_ID, f"ПРОИЗОШЛА ОШИБКА {e}")
 
 
 async def send_user_links(message: Message):
@@ -75,8 +81,10 @@ async def send_user_links(message: Message):
             continue
         # создаем ссылку на пользователя с использованием специального символа U+200b (невидимый символ)
         if ChatConfig.get(ChatConfig.chat_id == message.chat.id).is_nickname_visible:
-            link_users.append(f"[@{user.user.username or user.user.first_name}, ](tg://user?id={user.user.id})")
-        
+            link_users.append(
+                f"[@{user.user.username or user.user.first_name}, ](tg://user?id={user.user.id})"
+            )
+
         else:
             link_users.append(f"[​](tg://user?id={user.user.id})")
 
@@ -152,14 +160,6 @@ async def names_visibility_toggle(client: Client, message: Message):
     else:
         # отправляем сообщение об ошибке, если отправитель не является администратором
         await message.reply("Только администраторы могут использовать данную команду.")
-
-
-async def error_handler(update, exception):
-    logger.error(f"Update {update} caused error: {exception}")
-    # отправляем сообщение об ошибке в админский чат
-    await app.send_message(
-        ADMIN_CHAT_ID, f"ПРОИЗОШЛА ОШИБКА\n\n{update}\n\n<{exception}>"
-    )
 
 
 app.run()

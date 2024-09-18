@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from peewee import SqliteDatabase
 from decouple import config
@@ -12,9 +13,16 @@ API_ID = config("API_ID")
 API_HASH = config("API_HASH")
 ADMIN_CHAT_ID = int(config("ADMIN_CHAT_ID"))
 
+DIR = Path(__file__).absolute().parent
+
 # настройка логгирования
 logging.basicConfig(
-    level=logging.ERROR, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(f"{DIR}/logs.log"),
+        logging.StreamHandler(),
+    ],
 )
 logger = logging.getLogger(__name__)
 

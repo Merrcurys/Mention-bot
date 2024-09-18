@@ -166,3 +166,4 @@ cython_debug/
 *.db
 *.sqlite3
 *.env
+*.log
