@@ -1,0 +1,3 @@
+python-decouple==3.8
+Pyrogram==2.0.106
+peewee==3.17.6
