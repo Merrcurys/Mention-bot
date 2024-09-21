@@ -35,14 +35,14 @@ async def help_command(client: Client, message: Message):
 
 1. /help, /command - справка по всем командам.
 
-2. /all, /here, /everyone – позвать всех пользователей. 
+2. /all, /here, /everyone - позвать всех пользователей. 
 
 3. /access_toggle - тумблер прав доступа к оповещениям.
 
 4. /names_visibility - тумблер для видимости имен при оповещении.
 
 тех.поддержка - @merrcurys
-version: 3.0
+version: 3.1
     """
     await message.reply_text(help_text)
 
@@ -55,15 +55,21 @@ async def call_all_users(client: Client, message: Message):
         admins = await get_chat_admins(message)
         chat_config = ChatConfig.get(ChatConfig.chat_id == message.chat.id)
 
-        # проверяем наличие прав доступа к команде
-        if chat_config.need_access or message.from_user.id in admins:
-            if message.chat.id in frozen_commands:
-                await message.reply("Эту команду можно использовать только один раз в минуту.")
+        # проверяем, имеет ли пользователь доступ или является администратором
+        if not chat_config.need_access or message.from_user.id in admins:
+            # проверяем, что пользователей в чате не больше 75
+            members = [member async for member in app.get_chat_members(message.chat.id)]
+            if len(members) <= 75:
+                if message.chat.id in frozen_commands:
+                    await message.reply("Эту команду можно использовать только один раз в минуту.")
+                else:
+                    # выполняем команду и замораживаем её на 60 секунд
+                    await send_user_links(message)
+                    frozen_commands[message.chat.id] = True
+                    await asyncio.sleep(60)
+                    del frozen_commands[message.chat.id]
             else:
-                await send_user_links(message)
-                frozen_commands[message.chat.id] = True
-                await asyncio.sleep(60)
-                del frozen_commands[message.chat.id]
+                await message.reply("Эту команду можно использовать только если в чате не больше 75 пользователей.")
         else:
             await message.reply("Только администраторы могут использовать данную команду.")
     except Exception as e:

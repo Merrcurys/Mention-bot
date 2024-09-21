@@ -49,7 +49,7 @@ pip install -r requirements.txt
 API_TOKEN = <получить можно через @BotFather>
 API_ID = <получить можно на https://my.telegram.org>
 API_HASH = <получить можно на https://my.telegram.org>
-ADMIN_CHAT_ID = <скопируйте последние цифры в адрессной строки в браузере>
+ADMIN_CHAT_ID = <войдите в чат и скопируйте последние цифры в адресной строке браузере>
 ```
 Запуск бота
 ```
