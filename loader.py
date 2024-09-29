@@ -8,7 +8,6 @@ from pyrogram import Client
 
 # получение конфигурационных переменных из .env файла
 API_TOKEN = config("API_TOKEN")
-BOT_ID = int(config("BOT_ID"))
 API_ID = config("API_ID")
 API_HASH = config("API_HASH")
 ADMIN_CHAT_ID = int(config("ADMIN_CHAT_ID"))
