@@ -16,7 +16,7 @@ DIR = Path(__file__).absolute().parent
 
 # настройка логгирования
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARN,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler(f"{DIR}/logs.log"),

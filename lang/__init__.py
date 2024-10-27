@@ -7,14 +7,10 @@ def get_lexicon(lang):
         lexicon_module = import_module(f'lang.{lang}')
         return getattr(lexicon_module, f'LEXICON_{lang.upper()}')
     except ModuleNotFoundError:
-        return {}  # Возвращаем пустой словарь, если язык не найден
+        return {}  # возвращаем пустой словарь, если язык не найден
 
 
-def get_text(key, lang):
-    """получаем текст на основе языка пользователя"""
+def get_text(key, lang="en"):
+    """Получаем текст на основе языка пользователя."""
     lexicon = get_lexicon(lang)
-    if lang == 'ru':
-        txt = lexicon.get(key, key)
-    else:  # en - язык по умолчанию
-        txt = lexicon.get(key, key)
-    return txt
+    return lexicon.get(key, key)
