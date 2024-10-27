@@ -8,6 +8,7 @@ class ChatConfig(BaseModel):
     chat_id = peewee.IntegerField()
     need_access = peewee.BooleanField(default=False)
     is_nickname_visible = peewee.BooleanField(default=True)
+    language = peewee.CharField(max_length=3, default='en')
 
     def __repr__(self) -> str:
         return f"<Chat {self.chat_id}>"
