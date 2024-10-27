@@ -1,11 +1,13 @@
 import asyncio
 
 from pyrogram import Client, filters, enums
-from pyrogram.types import Message
+from pyrogram.types import Message, InlineKeyboardMarkup
 
 from loader import app, logger, ADMIN_CHAT_ID, database
 from models.models import ChatConfig
 from models.utils import create_table_if_not_exists
+from keyboard.keyboard_buttons import keyboard_start, keyboard_help
+from lang import get_text as _
 
 # создаем таблицы в базе данных
 database.create_tables([ChatConfig])
@@ -13,151 +15,171 @@ database.create_tables([ChatConfig])
 # словарь для хранения "замороженных" команд
 frozen_commands = {}
 
-# Функция для получения администраторов чата
-async def get_chat_admins(message):    
-    admins = [
-            admin
-            async for admin in app.get_chat_members(
-                message.chat.id, filter=enums.ChatMembersFilter.ADMINISTRATORS
-            )
-        ]
-    admins_id = [admin.user.id for admin in admins]
-    return admins_id
+
+async def get_chat_admins(message):
+    """Возвращает список идентификаторов администраторов чата."""
+    admins = []
+    async for member in app.get_chat_members(message.chat.id, filter=enums.ChatMembersFilter.ADMINISTRATORS):
+        admins.append(member.user.id)
+    return admins
 
 
-# --------функция справки--------
-@app.on_message(
-    filters.command(["help", "start", "command"]) & (filters.group | filters.private)
-)
+async def get_chat_data(message):
+    """Возвращает конфигурацию чата."""
+    create_table_if_not_exists(chat_id=message.chat.id)
+    chat_config = ChatConfig.get(ChatConfig.chat_id == message.chat.id)
+    return chat_config
+
+
+@app.on_message(filters.command(["start"]) & filters.private)
+async def start_command(client: Client, message: Message):
+    """Выводит инфо сообщение с кнопкой для добавления бота в группу."""
+    keyboard = InlineKeyboardMarkup(keyboard_start)
+    await message.reply_text(_('start_text'),
+                             reply_markup=keyboard, disable_web_page_preview=True,)
+
+
+@app.on_message(filters.command(["help", "command"]) & filters.group)
 async def help_command(client: Client, message: Message):
-    help_text = """
-———СПИСОК КОМАНД———
-
-1. /help, /command - справка по всем командам.
-
-2. /all, /here, /everyone - позвать всех пользователей. 
-
-3. /access_toggle - тумблер прав доступа к оповещениям.
-
-4. /names_visibility - тумблер для видимости имен при оповещении.
-
-тех.поддержка - @merrcurys
-version: 3.1
-    """
-    await message.reply_text(help_text)
+    """Выводит справку по всем командам."""
+    chat_config = await get_chat_data(message)
+    await message.reply_text(_("help_text", chat_config.language),
+                             reply_markup=keyboard_help, disable_web_page_preview=True,)
 
 
-# --------функция оповещения--------
-@app.on_message(filters.command(["all", "here", "everyone"]) & filters.group)
-async def call_all_users(client: Client, message: Message):
-    try:
-        create_table_if_not_exists(chat_id=message.chat.id)
-        admins = await get_chat_admins(message)
-        chat_config = ChatConfig.get(ChatConfig.chat_id == message.chat.id)
+@app.on_callback_query(filters.regex(r"^lang:"))
+async def handle_change_lang(client: Client, query):
+    """Обработчик смены языка."""
+    lang = query.data.split(":")[1]
 
-        # проверяем, имеет ли пользователь доступ или является администратором
-        if not chat_config.need_access or message.from_user.id in admins:
-            # проверяем, что пользователей в чате не больше 75
-            members = [member async for member in app.get_chat_members(message.chat.id)]
-            if len(members) <= 75:
-                if message.chat.id in frozen_commands:
-                    await message.reply("Эту команду можно использовать только один раз в минуту.")
-                else:
-                    # выполняем команду и замораживаем её на 60 секунд
-                    await send_user_links(message)
-                    frozen_commands[message.chat.id] = True
-                    await asyncio.sleep(60)
-                    del frozen_commands[message.chat.id]
-            else:
-                await message.reply("Эту команду можно использовать только если в чате не больше 75 пользователей.")
+    # Получаем конфигурацию чата
+    chat_config = await get_chat_data(query.message)
+    admins = await get_chat_admins(query.message)
+
+    if query.from_user.id in admins:
+        if chat_config.language != lang:
+            chat_config.language = lang
+            chat_config.save()
+            await query.message.edit_text(_("help_text", lang),
+                                          reply_markup=keyboard_help, disable_web_page_preview=True,)
+            await query.answer(_("lang_changed", lang))
         else:
-            await message.reply("Только администраторы могут использовать данную команду.")
+            await query.answer(_("lang_already_set", lang))
+    else:
+        await query.answer(_("only_admin_lang", lang))
+
+
+@app.on_message(filters.command(["all", "here", "everyone"]) & filters.group)
+async def everyone_command(client: Client, message: Message):
+    """Обработчик команды для оповещения всех пользователей."""
+    try:
+        # Получаем конфигурацию чата
+        chat_config = await get_chat_data(message)
+        admins = await get_chat_admins(message)
+        lang = chat_config.language
+
+        # Проверяем доступ к команде
+        if chat_config.need_access and message.from_user.id not in admins:
+            return await message.reply(_("only_admin", lang))
+
+        # Проверяем количество пользователей
+        if len([member async for member in app.get_chat_members(message.chat.id)]) > 75:
+            return await message.reply(_("many_users", lang))
+
+        # Проверяем заморожена ли команда
+        if message.chat.id in frozen_commands:
+            return await message.reply(_("spam_control", lang))
+
+        # Выполняем команду
+        await send_user_links(message)
+        # Замораживаем команду
+        frozen_commands[message.chat.id] = True
+        await asyncio.sleep(60)
+        del frozen_commands[message.chat.id]
+
     except Exception as e:
         logger.error(f"Произошла ошибка: {e}")
         await app.send_message(ADMIN_CHAT_ID, f"ПРОИЗОШЛА ОШИБКА {e}")
 
 
-# функция отправки ссылок пользователям
 async def send_user_links(message: Message):
+    """Отправка сообщений с сылками на пользователей в чате."""
+    # Получаем конфигурацию чата
+    chat_config = await get_chat_data(message)
+    lang = chat_config.language
     link_users = []
+    users_found = False
 
-    # получаем список пользователей этого чата и формируем ссылки на них
+    # Получаем список пользователей этого чата
     async for user in app.get_chat_members(message.chat.id):
-        if user.user.is_bot:
+        # Пропускаем ботов, удаленных пользователей и самого отправителя сообщения
+        if user.user.is_bot or user.user.is_deleted or message.from_user.id == user.user.id:
             continue
-        if ChatConfig.get(ChatConfig.chat_id == message.chat.id).is_nickname_visible:
+
+        # Указываем что сообщение было выведено хотя бы 1 раз
+        users_found = True
+
+        # Формируем ссылку на пользователя
+        if chat_config.is_nickname_visible:
+            # Используем юзернейм, если он есть, иначе имя пользователя для ссылки
             link_users.append(
-                # создаем ссылку на пользователя с его юзернеймом или с именем
-                f"[@{user.user.username or user.user.first_name}, ](tg://user?id={user.user.id})"
-            )
+                f"[@{user.user.username or user.user.first_name}, ](tg://user?id={user.user.id})")
         else:
-            # создаем ссылку на пользователя с использованием специального символа U+200b (невидимый символ)
+            # Используем невидимый символ (U+200b) для скрытия имени пользователя
             link_users.append(f"[​](tg://user?id={user.user.id})")
 
-        # отправляем сообщение каждые 5 пользователей (ограничение телеграмма на 5 ссылок в 1 сообщении)
-        if len(link_users) == 5:
-            await message.reply(
-                f"Важная информация!{''.join(link_users)}",
-                parse_mode=enums.ParseMode.MARKDOWN,
-            )
+        # Отправляем сообщение каждые 5 пользователей
+        if len(link_users) == 5:  # ограничение Telegram'а на 5 оповещений в одном сообщении
+            await message.reply(f"{_('all_info', lang)}{''.join(link_users)}", parse_mode=enums.ParseMode.MARKDOWN,)
             link_users = []
 
-    # отправляем оставшихся пользователей, если они есть
+    # Отправляем оставшихся пользователей, если они есть
     if link_users:
-        await message.reply(
-            f"Важная информация!{''.join(link_users)}",
-            parse_mode=enums.ParseMode.MARKDOWN,
-        )
+        await message.reply(f"{_('all_info', lang)}{''.join(link_users)}", parse_mode=enums.ParseMode.MARKDOWN,)
+
+    # Отправляем сообщение, если пользователей не было найдено
+    elif not users_found:
+        await message.reply(_('no_users_found', lang))
 
 
-# --------функция переключения прав доступа--------
 @app.on_message(filters.command(["access_toggle"]) & filters.group)
 async def access_toggle(client: Client, message: Message):
-    create_table_if_not_exists(chat_id=message.chat.id)
-
-    # получаем список администраторов чата
+    """Обработчик переключения прав доступа"""
+    # Получаем конфигурацию чата
+    chat_config = await get_chat_data(message)
     admins = await get_chat_admins(message)
-    chat_config = ChatConfig.get(ChatConfig.chat_id == message.chat.id)
+    lang = chat_config.language
 
-    if message.from_user.id in admins:
-        chat_config.need_access = not chat_config.need_access
-        chat_config.save()
+    # Проверяем доступ к команде
+    if message.from_user.id not in admins:
+        return await message.reply(_("only_admin", lang))
 
-        text = (
-            "Упоминать участников чата теперь могут все."
-            if not chat_config.need_access
-            else "Упоминать участников чата теперь могут только администраторы."
-        )
-        await message.reply(text)
+    # Переключение прав доступа
+    chat_config.need_access = not chat_config.need_access
+    chat_config.save()
 
-    else:
-        # отправляем сообщение об ошибке, если отправитель не является администратором
-        await message.reply("Только администраторы могут использовать данную команду.")
+    await message.reply((_("mention_all", lang)
+                         if not chat_config.need_access else _("mention_admin", lang)))
 
 
-# --------функция переключения видимости имен--------
 @app.on_message(filters.command(["names_visibility"]) & filters.group)
 async def names_visibility_toggle(client: Client, message: Message):
-    create_table_if_not_exists(chat_id=message.chat.id)
-
-    # получаем список администраторов чата
+    """Обработчик переключения видимости никнеймов"""
+    # Получаем конфигурацию чата
+    chat_config = await get_chat_data(message)
     admins = await get_chat_admins(message)
-    chat_config = ChatConfig.get(ChatConfig.chat_id == message.chat.id)
+    lang = chat_config.language
 
-    if message.from_user.id in admins:
-        chat_config.is_nickname_visible = not chat_config.is_nickname_visible
-        chat_config.save()
+    # Проверяем доступ к команде
+    if message.from_user.id not in admins:
+        return await message.reply(_("only_admin", lang))
 
-        text = (
-            "При упоминание участников чата юзернеймы теперь отображаются."
-            if chat_config.is_nickname_visible
-            else "При упоминание участников чата юзернеймы теперь скрыты."
-        )
-        await message.reply(text)
+    # Переключение видимости никнеймов
+    chat_config.is_nickname_visible = not chat_config.is_nickname_visible
+    chat_config.save()
 
-    else:
-        # отправляем сообщение об ошибке, если отправитель не является администратором
-        await message.reply("Только администраторы могут использовать данную команду.")
+    await message.reply(_("show_username", lang)
+                        if chat_config.is_nickname_visible else _("hide_username", lang))
 
 
 # запускаем бота
