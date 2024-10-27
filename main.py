@@ -35,7 +35,8 @@ async def get_chat_data(message):
 async def start_command(client: Client, message: Message):
     """Выводит инфо сообщение с кнопкой для добавления бота в группу."""
     keyboard = InlineKeyboardMarkup(keyboard_start)
-    await message.reply_text(_('start_text'), reply_markup=keyboard,)
+    await message.reply_text(_('start_text'),
+                             reply_markup=keyboard, disable_web_page_preview=True,)
 
 
 @app.on_message(filters.command(["help", "command"]) & filters.group)
@@ -98,7 +99,6 @@ async def everyone_command(client: Client, message: Message):
 
     except Exception as e:
         logger.error(f"Произошла ошибка: {e}")
-        await message.reply("Произошла ошибка обратитесь к @merrcurys.")
         await app.send_message(ADMIN_CHAT_ID, f"ПРОИЗОШЛА ОШИБКА {e}")
 
 

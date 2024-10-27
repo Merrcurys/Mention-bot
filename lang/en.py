@@ -6,11 +6,16 @@ LEXICON_EN = {
     'start_text': dedent(""" 
         Добавьте бота в группу, для полного функционала. 
 
-        Бот умеет оповещать всех в группе до 75 пользователей, может изменять права на использование команды и скрывать никнеймы при оповещении.
+        Бот может оповещать всех в группе до 75 пользователей, может изменять права доступа к командам, а также скрывать никнеймы при оповещении.
+                         
+        Язык бота меняется внутри группы при вызове команды /help.
 
-        Add the bot to the group for full functionality.
+        Add the bot to the group for full functionality. 
 
-        The bot can notify everyone in a group of up to 75 users, can change the rights to use the command and hide nicknames when notifying.
+        The bot can notify everyone in a group of up to 75 users, can change access rights to commands, and hide nicknames when notified.
+        
+        support - @merrcurys
+        [github](https://github.com/Merrcurys/Mention-bot) | [news](https://t.me/merrcurys_software/41)
     """),
 
     # Menu
@@ -26,10 +31,10 @@ LEXICON_EN = {
         4. /names_visibility - toggle visibility of usernames in mentions.
         
         support - @merrcurys
-        version: [4.0](https://t.me/merrcurys_software/38)
+        version: [4.0](https://t.me/merrcurys_software/42)
     """),
 
-    'all_info': "Important information!\n",
+    'all_info': "Important information!",
 
     # Notifications
     'spam_control': "This command can only be used once per minute.",
