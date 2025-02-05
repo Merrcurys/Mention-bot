@@ -4,12 +4,6 @@ LEXICON_EN = {
     # ------------------ ENGLISH ------------------ #
 
     'start_text': dedent(""" 
-        Добавьте бота в группу, для полного функционала. 
-
-        Бот может оповещать всех в группе до 75 пользователей, может изменять права доступа к командам, а также скрывать никнеймы при оповещении.
-                         
-        Язык бота меняется внутри группы при вызове команды /help.
-
         Add the bot to the group for full functionality. 
 
         The bot can notify everyone in a group of up to 75 users, can change access rights to commands, and hide nicknames when notified.

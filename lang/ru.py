@@ -6,15 +6,9 @@ LEXICON_RU = {
     'start_text': dedent(""" 
         Добавьте бота в группу, для полного функционала. 
 
-        Бот может оповещать всех в группе до 75 пользователей, может изменять права доступа к командам, а также скрывать никнеймы при оповещении.
-                         
-        Язык бота меняется внутри группы при вызове команды /help.
-
-        Add the bot to the group for full functionality. 
-
-        The bot can notify everyone in a group of up to 75 users, can change access rights to commands, and hide nicknames when notified.
+        Бот может оповещать всех в группе до 75 пользователей, может изменять права доступа к командам, а также скрывать никнеймы при оповещении.     
         
-        support - @merrcurys
+        техподдержка - @merrcurys
         [github](https://github.com/Merrcurys/Mention-bot) | [news](https://t.me/merrcurys_software/41)           
     """),
 

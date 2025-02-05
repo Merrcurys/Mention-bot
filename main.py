@@ -1,12 +1,12 @@
 import asyncio
 
 from pyrogram import Client, filters, enums
-from pyrogram.types import Message, InlineKeyboardMarkup
+from pyrogram.types import Message
 
-from loader import app, logger, ADMIN_CHAT_ID, database
+from loader import app, logger, database, ADMIN_CHAT_ID
 from models.models import ChatConfig
 from models.utils import create_table_if_not_exists
-from keyboard.keyboard_buttons import keyboard_start, keyboard_help
+from keyboard.keyboard_buttons import keyboard_start_ru, keyboard_start_gb, keyboard_help
 from lang import get_text as _
 
 # создаем таблицы в базе данных
@@ -31,12 +31,11 @@ async def get_chat_data(message):
     return chat_config
 
 
-@app.on_message(filters.command(["start"]) & filters.private)
+@app.on_message(filters.private)
 async def start_command(client: Client, message: Message):
     """Выводит инфо сообщение с кнопкой для добавления бота в группу."""
-    keyboard = InlineKeyboardMarkup(keyboard_start)
     await message.reply_text(_('start_text'),
-                             reply_markup=keyboard, disable_web_page_preview=True,)
+                             reply_markup=keyboard_start_gb, disable_web_page_preview=True,)
 
 
 @app.on_message(filters.command(["help", "command"]) & filters.group)
@@ -47,26 +46,34 @@ async def help_command(client: Client, message: Message):
                              reply_markup=keyboard_help, disable_web_page_preview=True,)
 
 
-@app.on_callback_query(filters.regex(r"^lang:"))
+@app.on_callback_query(filters.regex(r"^lang:(ru|en)(_start)?$"))
 async def handle_change_lang(client: Client, query):
     """Обработчик смены языка."""
-    lang = query.data.split(":")[1]
+    lang = query.data.split(":")[1].split("_")[0]
+    command_origin = query.data.split("_")[-1]
 
-    # Получаем конфигурацию чата
-    chat_config = await get_chat_data(query.message)
-    admins = await get_chat_admins(query.message)
+    if command_origin == "start":
+        keybord = keyboard_start_ru if lang == "ru" else keyboard_start_gb
 
-    if query.from_user.id in admins:
-        if chat_config.language != lang:
-            chat_config.language = lang
-            chat_config.save()
-            await query.message.edit_text(_("help_text", lang),
-                                          reply_markup=keyboard_help, disable_web_page_preview=True,)
-            await query.answer(_("lang_changed", lang))
-        else:
-            await query.answer(_("lang_already_set", lang))
+        await query.message.edit_text(_("start_text", lang),
+                                      reply_markup=keybord, disable_web_page_preview=True,)
+        return await query.answer(_("lang_changed", lang))
     else:
-        await query.answer(_("only_admin_lang", lang))
+        # Получаем конфигурацию чата
+        chat_config = await get_chat_data(query.message)
+        admins = await get_chat_admins(query.message)
+
+        if query.from_user.id not in admins:
+            return await query.answer(_("only_admin_lang", lang))
+
+        if chat_config.language == lang:
+            return await query.answer(_("lang_already_set", lang))
+
+        chat_config.language = lang
+        chat_config.save()
+        await query.message.edit_text(_("help_text", lang),
+                                      reply_markup=keyboard_help, disable_web_page_preview=True,)
+        await query.answer(_("lang_changed", lang))
 
 
 @app.on_message(filters.command(["all", "here", "everyone"]) & filters.group)
@@ -181,6 +188,24 @@ async def names_visibility_toggle(client: Client, message: Message):
     await message.reply(_("show_username", lang)
                         if chat_config.is_nickname_visible else _("hide_username", lang))
 
+
+@app.on_message(filters.new_chat_members)
+async def new_member(client: Client, message: Message):
+    """Выводит меню команд при добавлении бота в группу."""
+    if message.new_chat_members and message.new_chat_members[0].is_self:
+        chat_id = message.chat.id
+
+        try:
+            # Получаем конфигурацию чата
+            chat_config = await get_chat_data(message)
+            lang = chat_config.language
+
+            await client.send_message(chat_id, _("help_text", lang),
+                                      reply_markup=keyboard_help, disable_web_page_preview=True)
+
+        except Exception as e:
+            logger.error(f"Ошибка при обработке добавления в чат: {e}")
+            await client.send_message(ADMIN_CHAT_ID, f"ПРОИЗОШЛА ОШИБКА {e}")
 
 # запускаем бота
 app.run()
