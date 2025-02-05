@@ -9,7 +9,7 @@ LEXICON_EN = {
         The bot can notify everyone in a group of up to 75 users, can change access rights to commands, and hide nicknames when notified.
         
         support - @merrcurys
-        [github](https://github.com/Merrcurys/Mention-bot) | [news](https://t.me/merrcurys_software/41)
+        [github](https://github.com/Merrcurys/Mention-bot) | [news](https://t.me/merrcurys_software/41) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
     """),
 
     # Menu
@@ -25,7 +25,7 @@ LEXICON_EN = {
         4. /names_visibility - toggle visibility of usernames in mentions.
         
         support - @merrcurys
-        version: [4.0](https://t.me/merrcurys_software/42)
+        version: [4.1](https://t.me/merrcurys_software/47) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
     """),
 
     'all_info': "Important information!",

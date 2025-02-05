@@ -9,7 +9,7 @@ LEXICON_RU = {
         Бот может оповещать всех в группе до 75 пользователей, может изменять права доступа к командам, а также скрывать никнеймы при оповещении.     
         
         техподдержка - @merrcurys
-        [github](https://github.com/Merrcurys/Mention-bot) | [news](https://t.me/merrcurys_software/41)           
+        [github](https://github.com/Merrcurys/Mention-bot) | [news](https://t.me/merrcurys_software/41) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)          
     """),
 
     # Меню
@@ -25,7 +25,7 @@ LEXICON_RU = {
         4. /names_visibility - тумблер для видимости имен при оповещении.
         
         техподдержка - @merrcurys
-        version: [4.0](https://t.me/merrcurys_software/42)
+        version: [4.1](https://t.me/merrcurys_software/47) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
     """),
 
     'all_info': "Важная информация!",
