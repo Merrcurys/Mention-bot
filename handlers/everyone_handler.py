@@ -6,12 +6,15 @@ from loader import app, logger, ADMIN_CHAT_ID
 from lang import get_text as _
 from utils.get_admins import get_chat_admins
 from utils.get_data import get_chat_data
+from utils.monitoring import track_command
+
 
 # словарь для хранения "замороженных" команд
 frozen_commands = {}
 
 
 @app.on_message(filters.command(["all", "here", "everyone"]) & filters.group)
+@track_command("everyone")
 async def everyone_command(client: Client, message: Message):
     """Обработчик команды для оповещения всех пользователей."""
     try:

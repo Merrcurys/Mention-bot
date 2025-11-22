@@ -6,9 +6,11 @@ from keyboard.keyboard_buttons import keyboard_start_ru, keyboard_start_gb, keyb
 from lang import get_text as _
 from utils.get_admins import get_chat_admins
 from utils.get_data import get_chat_data
+from utils.monitoring import track_command
 
 
 @app.on_callback_query(filters.regex(r"^lang:(ru|en)(_start)?$"))
+@track_command("change_lang")
 async def handle_change_lang(client: Client, query):
     """Обработчик смены языка."""
     try:

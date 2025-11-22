@@ -5,9 +5,11 @@ from loader import app, logger, ADMIN_CHAT_ID
 from lang import get_text as _
 from utils.get_admins import get_chat_admins
 from utils.get_data import get_chat_data
+from utils.monitoring import track_command
 
 
 @app.on_message(filters.command(["names_visibility"]) & filters.group)
+@track_command("names_visibility")
 async def names_visibility_toggle(client: Client, message: Message):
     """Обработчик переключения видимости никнеймов"""
     try:
@@ -27,5 +29,6 @@ async def names_visibility_toggle(client: Client, message: Message):
         await message.reply(_("show_username", lang)
                             if chat_config.is_nickname_visible else _("hide_username", lang))
     except Exception as e:
-        logger.error(f"Ошибка при переключении видимости имен в чате: {e}", exc_info=True)
+        logger.error(
+            f"Ошибка при переключении видимости имен в чате: {e}", exc_info=True)
         await client.send_message(ADMIN_CHAT_ID, f"Произошла ошибка при переключении видимости имен в чате: {e}")

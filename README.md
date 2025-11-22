@@ -59,3 +59,23 @@ ADMIN_CHAT_ID = <войдите в чат и скопируйте последн
 ```
 python main.py
 ```
+
+## Установка через Docker
+
+(Необязательно): Установите Grafana и Prometheus и настройте Prometheus для получения данных с Mention Bot И создайте общую сеть Docker:
+```bash
+docker network create monitoring_system
+```
+Запустите grafana и prometheus:
+   ```bash
+   docker-compose up -d
+   ```
+
+Запустите Mention Bot:
+   ```bash
+   docker-compose up -d
+   ```
+
+## Точки доступа
+
+- **Метрики бота**: http://localhost:8001/metrics
