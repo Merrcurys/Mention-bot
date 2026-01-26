@@ -3,6 +3,7 @@ from textwrap import dedent
 LEXICON_RU = {
     # ------------------ РУССКИЙ ------------------ #
 
+    # Старт
     'start_text': dedent(""" 
         Добавьте бота в группу, для полного функционала. 
 
@@ -13,22 +14,37 @@ LEXICON_RU = {
     """),
 
     # Меню
-    'help_text': dedent(""" 
-        **———СПИСОК КОМАНД———**
+    'help_text_start': dedent(""" 
+        <emoji id=5287701007390746028>😀</emoji><emoji id=5287271536430948585>😀</emoji><emoji id=5287716774215689708>😀</emoji><emoji id=5289925796155106922>😀</emoji><emoji id=5287588797075170892>😀</emoji><emoji id=5289543758814127281>😀</emoji><emoji id=5287362237550307187>😀</emoji>
+                
+        <emoji id=5287353089269966535>😀</emoji> /help, /command - справка по всем командам
         
-        1. /help, /command - справка по всем командам.
-        
-        2. /all, /here, /everyone - позвать всех пользователей. 
-        
-        3. /access_toggle - тумблер прав доступа к оповещениям.
-        
-        4. /names_visibility - тумблер для видимости имен при оповещении.
-        
-        техподдержка - @merrcurys
-        version: [4.1](https://t.me/merrcurys_software/47) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
+        <emoji id=5287250783148976769>😀</emoji> /all, /here, /everyone - оповестить всех пользователей
     """),
 
-    'all_info': "Важная информация!",
+    'help_text_3_many': dedent(""" 
+        <emoji id=5287753603560252687>😀</emoji> /access_toggle - смена прав доступа к оповещениям (<emoji id=6037496202990194718>🔒</emoji>)
+    """),
+
+    'help_text_3_only': dedent(""" 
+        <emoji id=5287753603560252687>😀</emoji> /access_toggle - смена прав доступа к оповещениям (<emoji id=6037249452824072506>🔒</emoji>)
+    """),
+
+    'help_text_4_show': dedent(""" 
+        <emoji id=5287257182650247240>😀</emoji> /names_visibility - смена видимости имен (<emoji id=6037397706505195857>👁</emoji>)
+    """),
+
+    'help_text_4_hide': dedent(""" 
+        <emoji id=5287257182650247240>😀</emoji> /names_visibility - смена видимости имен (<emoji id=6037243349675544634>👁</emoji>)
+    """),
+
+    'help_text_end': dedent(""" 
+        связь - @merrcurys
+        version: [4.3](https://t.me/merrcurys_software/100) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
+    """),
+
+    # Оповещение
+    'all_info': "<emoji id=5321097148371058002>⚡️</emoji>Важная информация!",
 
     # Уведомления
     'spam_control': "Эту команду можно использовать только один раз в минуту.",
@@ -37,12 +53,12 @@ LEXICON_RU = {
     'no_users_found': "В этом чате кроме вас некого оповещать.",
 
     # Права доступа к команде all
-    'mention_all': "Упоминать участников чата теперь могут все.",
-    'mention_admin': "Упоминать участников чата теперь могут только администраторы.",
+    'mention_all': "<emoji id=6037496202990194718>🔒</emoji>Упоминать участников чата теперь могут все.",
+    'mention_admin': "<emoji id=6037249452824072506>🔒</emoji>Упоминать участников чата теперь могут только администраторы.",
 
     # Отображение username
-    'show_username': "При упоминании участников чата юзернеймы теперь отображаются.",
-    'hide_username': "При упоминании участников чата юзернеймы теперь скрыты.",
+    'show_username': "<emoji id=6037397706505195857>👁</emoji>При упоминании участников чата юзернеймы теперь отображаются.",
+    'hide_username': "<emoji id=6037243349675544634>👁</emoji>При упоминании участников чата юзернеймы теперь скрыты.",
 
     # Язык
     'lang_changed': "Язык изменен.",

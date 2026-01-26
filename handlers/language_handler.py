@@ -35,8 +35,19 @@ async def handle_change_lang(client: Client, query):
                 return await query.answer(_("lang_already_set", lang))
 
             chat_config.language = lang
+
+            # Получаем статус по командам
+            help_3_command = "help_text_3_only" if chat_config.need_access else "help_text_3_many"
+            help_4_command = "help_text_4_show" if chat_config.is_nickname_visible else "help_text_4_hide"
+
+            # Формируем текст
+            text = _("help_text_start", chat_config.language) + \
+                _(help_3_command, chat_config.language) + \
+                _(help_4_command, chat_config.language) + \
+                _("help_text_end", chat_config.language)
+
             chat_config.save()
-            await query.message.edit_text(_("help_text", lang),
+            await query.message.edit_text(_(text, lang),
                                           reply_markup=keyboard_help, disable_web_page_preview=True,)
             await query.answer(_("lang_changed", lang))
     except Exception as e:

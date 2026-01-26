@@ -5,11 +5,9 @@ from loader import app, logger, ADMIN_CHAT_ID
 from keyboard.keyboard_buttons import keyboard_help
 from lang import get_text as _
 from utils.get_data import get_chat_data
-from utils.monitoring import track_command
 
 
 @app.on_message(filters.new_chat_members)
-@track_command("new_chat_member")
 async def adding_bot_group(client: Client, message: Message):
     """Выводит меню команд при добавлении бота в группу."""
     try:

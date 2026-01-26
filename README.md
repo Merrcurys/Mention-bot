@@ -57,7 +57,7 @@ ADMIN_CHAT_ID = <войдите в чат и скопируйте последн
 ```
 Запуск бота
 ```
-python main.py
+python bot.py
 ```
 
 ## Установка через Docker

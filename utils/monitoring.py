@@ -7,10 +7,6 @@ command_counter = Counter(
     'bot_commands_total',
     'Total number of commands used',
     ['command'])
-command_errors = Counter(
-    'bot_commands_errors_total',
-    'Total number of command errors',
-    ['command'])
 command_duration = Histogram(
     'bot_command_duration_seconds',
     'Time spent processing commands',
@@ -33,6 +29,10 @@ nickname_visibility_gauge = Gauge(
     'bot_chats_by_nickname_visibility',
     'Number of chats by nickname visibility',
     ['visibility'])
+need_access_gauge = Gauge(
+    'bot_chats_by_need_access',
+    'Number of chats by need access',
+    ['access'])
 groups_count_gauge = Gauge(
     'bot_groups_total',
     'Total number of groups using the bot')
@@ -42,7 +42,7 @@ def initialize_metrics():
     """Инициализирует метрики с нулевыми значениями для всех команд"""
     commands = [
         'start', 'help', 'everyone', 'access_toggle', 'change_lang',
-        'names_visibility', 'new_chat_member'
+        'names_visibility'
     ]
 
     # Инициализируем гистограмму длительности команд
@@ -54,6 +54,8 @@ def initialize_metrics():
     language_gauge.labels(language='ru').set(0)
     nickname_visibility_gauge.labels(visibility=0).set(0)
     nickname_visibility_gauge.labels(visibility=1).set(0)
+    need_access_gauge.labels(access=0).set(0)
+    need_access_gauge.labels(access=1).set(0)
     groups_count_gauge.set(0)
 
 
@@ -77,6 +79,12 @@ def update_database_metrics():
             count = ChatConfig.select().where(
                 ChatConfig.is_nickname_visible == value).count()
             nickname_visibility_gauge.labels(visibility=value).set(count)
+
+        # Подсчитываем чаты с правами
+        for value in [0, 1]:
+            count = ChatConfig.select().where(
+                ChatConfig.need_access == value).count()
+            need_access_gauge.labels(access=value).set(count)
 
         # Подсчитываем количество групп (чаты с chat_id < 0 - это группы)
         groups_count = ChatConfig.select().where(
@@ -115,7 +123,6 @@ def track_command(command_name):
                     command=command_name).set(end_timestamp)
                 return result
             except Exception:
-                command_errors.labels(command=command_name).inc()
                 end_timestamp = time.time()
                 command_end_time.labels(
                     command=command_name).set(end_timestamp)

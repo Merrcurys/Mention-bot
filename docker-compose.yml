@@ -2,7 +2,7 @@ services:
   mention-bot:
     build: .
     container_name: mention-bot
-    restart: unless-stopped
+    restart: always # unless-stopped
     env_file:
       - .env
     volumes:

@@ -14,8 +14,18 @@ async def help_command(client: Client, message: Message):
     """Выводит справку по всем командам."""
     try:
         chat_config = await get_chat_data(message)
-        await message.reply_text(_("help_text", chat_config.language),
-                                 reply_markup=keyboard_help, disable_web_page_preview=True,)
+
+        # Получаем статус по командам
+        help_3_command = "help_text_3_only" if chat_config.need_access else "help_text_3_many"
+        help_4_command = "help_text_4_show" if chat_config.is_nickname_visible else "help_text_4_hide"
+
+        # Формируем текст
+        text = _("help_text_start", chat_config.language) + \
+            _(help_3_command, chat_config.language) + \
+            _(help_4_command, chat_config.language) + \
+            _("help_text_end", chat_config.language)
+
+        await message.reply_text(text, reply_markup=keyboard_help, disable_web_page_preview=True,)
     except Exception as e:
         logger.error(
             f"Ошибка при отправке сообщения справки в чат: {e}", exc_info=True)
