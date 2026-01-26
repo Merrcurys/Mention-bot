@@ -72,12 +72,12 @@ async def send_user_links(message: Message, chat_config, lang):
 
             # Отправляем сообщение каждые 5 пользователей
             if len(link_users) == 5:  # ограничение Telegram'а на 5 оповещений в одном сообщении
-                await message.reply(f"{_('all_info', lang)}{''.join(link_users)}", parse_mode=enums.ParseMode.MARKDOWN,)
+                await message.reply(f"{_('all_info', lang)}{''.join(link_users)}")
                 link_users = []
 
         # Отправляем оставшихся пользователей, если они есть
         if link_users:
-            await message.reply(f"{_('all_info', lang)}{''.join(link_users)}", parse_mode=enums.ParseMode.MARKDOWN,)
+            await message.reply(f"{_('all_info', lang)}{''.join(link_users)}")
 
         # Отправляем сообщение, если пользователей не было найдено
         elif not users_found:

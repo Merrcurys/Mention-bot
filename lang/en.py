@@ -44,7 +44,7 @@ LEXICON_EN = {
     """),
 
     # Mention
-    'all_info': "<emoji id=5321097148371058002>⚡️</emoji>Important information!",
+    'all_info': "<emoji id=5321097148371058002>⚡️</emoji> Important information!",
 
     # Notifications
     'spam_control': "This command can only be used once per minute.",
