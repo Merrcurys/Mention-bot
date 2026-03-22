@@ -1,6 +1,10 @@
+# Mention Bot
+
 <p align="center">
       <img src="https://i.ibb.co/2nW3Bq7/avatar6517195165-2-out-1.jpg" alt="Project Logo" width="726">
 </p>
+
+> ⚠️ **Внимание!** Из-за ограничений Telegram бот приостанавливает свою работу.
 
 ## О боте
 Mention bot - это бот, который может оповещать всех пользователей в чате.
@@ -76,6 +80,6 @@ docker network create monitoring_system
    docker-compose up -d
    ```
 
-## Точки доступа
+## Prometheus
 
 - **Метрики бота**: http://localhost:8001/metrics
