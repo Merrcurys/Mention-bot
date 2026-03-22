@@ -83,3 +83,9 @@ docker network create monitoring_system
 ## Prometheus
 
 - **Метрики бота**: http://localhost:8001/metrics
+
+## Grafana
+
+<p align="center">
+      <img src="https://github.com/user-attachments/assets/e03c3605-c582-4590-a983-1996b21b4a69" alt="Grafana" width="726">
+</p>
