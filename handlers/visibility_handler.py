@@ -12,6 +12,7 @@ from utils.sender import is_sender_admin
 @app.on_message(filters.command(["names_visibility"]) & filters.group)
 async def names_visibility_toggle(client: Client, message: Message):
     """Обработчик переключения видимости никнеймов"""
+    lang = "en"
     try:
         # Получаем конфигурацию чата
         chat_config = await get_chat_data(message)
@@ -32,4 +33,5 @@ async def names_visibility_toggle(client: Client, message: Message):
         await report_error(
             client, e,
             "Ошибка при переключении видимости имен в чате",
-            "Произошла ошибка при переключении видимости имен в чате")
+            "Произошла ошибка при переключении видимости имен в чате",
+            message=message, lang=lang)

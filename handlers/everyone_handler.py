@@ -31,6 +31,7 @@ def _freeze(chat_id: int) -> None:
 @app.on_message(filters.command(["all", "here", "everyone"]) & filters.group)
 async def everyone_command(client: Client, message: Message):
     """Обработчик команды для оповещения всех пользователей."""
+    lang = "en"
     try:
         # Получаем конфигурацию чата
         chat_config = await get_chat_data(message)
@@ -56,7 +57,8 @@ async def everyone_command(client: Client, message: Message):
         await report_error(
             app, e,
             "Ошибка при выполнении команды /all в чате",
-            "Произошла ошибка при выполнении /all в чате")
+            "Произошла ошибка при выполнении /all в чате",
+            message=message, lang=lang)
 
 
 async def send_user_links(message: Message, chat_config, lang):
@@ -104,4 +106,5 @@ async def send_user_links(message: Message, chat_config, lang):
         await report_error(
             app, e,
             "Ошибка при отправке ссылок на пользователей в чате",
-            "Произошла ошибка при отправке ссылок в чате")
+            "Произошла ошибка при отправке ссылок в чате",
+            message=message, lang=lang)

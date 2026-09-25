@@ -12,6 +12,7 @@ from utils.sender import is_sender_admin
 @app.on_message(filters.command(["access_toggle"]) & filters.group)
 async def access_toggle(client: Client, message: Message):
     """Обработчик переключения прав доступа"""
+    lang = "en"
     try:
         # Получаем конфигурацию чата
         chat_config = await get_chat_data(message)
@@ -32,4 +33,5 @@ async def access_toggle(client: Client, message: Message):
         await report_error(
             client, e,
             "Ошибка при переключении прав доступа в чате",
-            "Произошла ошибка при переключении прав доступа в чате")
+            "Произошла ошибка при переключении прав доступа в чате",
+            message=message, lang=lang)

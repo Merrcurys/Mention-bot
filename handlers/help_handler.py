@@ -11,8 +11,10 @@ from utils.get_data import get_chat_data
 @app.on_message(filters.command(["help", "command"]) & filters.group)
 async def help_command(client: Client, message: Message):
     """Выводит справку по всем командам."""
+    lang = "en"
     try:
         chat_config = await get_chat_data(message)
+        lang = chat_config.language
 
         # Получаем статус по командам
         help_3_command = "help_text_3_only" if chat_config.need_access else "help_text_3_many"
@@ -29,4 +31,5 @@ async def help_command(client: Client, message: Message):
         await report_error(
             client, e,
             "Ошибка при отправке сообщения справки в чат",
-            "Произошла ошибка при отправке справки в чат")
+            "Произошла ошибка при отправке справки в чат",
+            message=message, lang=lang)

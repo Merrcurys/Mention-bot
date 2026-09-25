@@ -11,12 +11,14 @@ from utils.get_data import get_chat_data
 @app.on_message(filters.new_chat_members)
 async def adding_bot_group(client: Client, message: Message):
     """Выводит меню команд при добавлении бота в группу."""
+    lang = "en"
     try:
         if message.new_chat_members and message.new_chat_members[0].is_self:
             chat_id = message.chat.id
 
             # Получаем конфигурацию чата
             chat_config = await get_chat_data(message)
+            lang = chat_config.language
 
             # Получаем статус по командам
             help_3_command = "help_text_3_only" if chat_config.need_access else "help_text_3_many"
@@ -33,4 +35,5 @@ async def adding_bot_group(client: Client, message: Message):
         await report_error(
             client, e,
             "Ошибка при обработке добавления бота в чат",
-            "Произошла ошибка при добавлении в чат")
+            "Произошла ошибка при добавлении в чат",
+            message=message, lang=lang)

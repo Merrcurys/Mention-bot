@@ -52,6 +52,10 @@ LEXICON_EN = {
     'only_admin': "Only administrators can use this command.",
     'no_users_found': "In this chat, there is no one to mention except you.",
 
+    # Failed to send a message to a topic/chat
+    'cannot_send_topic': "⚠️ Couldn't send the message: this topic is closed.",
+    'cannot_send_chat': "⚠️ Couldn't send the message to this chat: the bot has no access or permissions.",
+
     # Access rights to the all command
     'mention_all': "<emoji id=6037496202990194718>🔒</emoji>Now all chat members can be mentioned.",
     'mention_admin': "<emoji id=6037249452824072506>🔒</emoji>Now only administrators can mention chat members.",
