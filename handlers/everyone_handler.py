@@ -88,14 +88,14 @@ async def send_user_links(message: Message, chat_config, lang):
 
             # Отправляем сообщение каждые 5 пользователей
             if len(link_users) == 5:  # ограничение Telegram'а на 5 оповещений в одном сообщении
-                batch = f"{_('all_info', lang)}{''.join(link_users)}"
+                batch = f"{_('all_info', lang)}\n{''.join(link_users)}"
                 await call_with_flood_wait(lambda: message.reply(batch))
                 link_users = []
                 await asyncio.sleep(1)  # мягкий троттлинг, чтобы реже ловить FLOOD_WAIT
 
         # Отправляем оставшихся пользователей, если они есть
         if link_users:
-            batch = f"{_('all_info', lang)}{''.join(link_users)}"
+            batch = f"{_('all_info', lang)}\n{''.join(link_users)}"
             await call_with_flood_wait(lambda: message.reply(batch))
 
         # Отправляем сообщение, если пользователей не было найдено
