@@ -2,11 +2,13 @@ import asyncio
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message
 
-from loader import app, logger, ADMIN_CHAT_ID
+from loader import app
 from lang import get_text as _
+from utils.errors import report_error
 from utils.get_admins import get_chat_admins
 from utils.get_data import get_chat_data
 from utils.monitoring import track_command
+from utils.sender import get_sender_id, is_sender_admin
 
 
 # словарь для хранения "замороженных" команд
@@ -24,7 +26,7 @@ async def everyone_command(client: Client, message: Message):
         lang = chat_config.language
 
         # Проверяем доступ к команде
-        if chat_config.need_access and message.from_user.id not in admins:
+        if chat_config.need_access and not is_sender_admin(message, admins):
             return await message.reply(_("only_admin", lang))
 
         # Проверяем количество пользователей
@@ -41,9 +43,10 @@ async def everyone_command(client: Client, message: Message):
         await asyncio.sleep(60)
         del frozen_commands[message.chat.id]
     except Exception as e:
-        logger.error(
-            f"Ошибка при выполнении команды /all в чате: {e}", exc_info=True)
-        await app.send_message(ADMIN_CHAT_ID, f"Произошла ошибка при выполнении /all в чате: {e}")
+        await report_error(
+            app, e,
+            "Ошибка при выполнении команды /all в чате",
+            "Произошла ошибка при выполнении /all в чате")
 
 
 async def send_user_links(message: Message, chat_config, lang):
@@ -51,11 +54,12 @@ async def send_user_links(message: Message, chat_config, lang):
     try:
         link_users = []
         users_found = False
+        sender_id = get_sender_id(message)
 
         # Получаем список пользователей этого чата
         async for user in app.get_chat_members(message.chat.id):
             # Пропускаем ботов, удаленных пользователей и самого отправителя сообщения
-            if user.user.is_bot or user.user.is_deleted or message.from_user.id == user.user.id:
+            if user.user.is_bot or user.user.is_deleted or sender_id == user.user.id:
                 continue
 
             # Указываем что сообщение было выведено хотя бы 1 раз
@@ -84,6 +88,7 @@ async def send_user_links(message: Message, chat_config, lang):
             await message.reply(_('no_users_found', lang))
 
     except Exception as e:
-        logger.error(
-            f"Ошибка при отправке ссылок на пользователей в чате: {e}", exc_info=True)
-        await app.send_message(ADMIN_CHAT_ID, f"Произошла ошибка при отправке ссылок в чате: {e}")
+        await report_error(
+            app, e,
+            "Ошибка при отправке ссылок на пользователей в чате",
+            "Произошла ошибка при отправке ссылок в чате")

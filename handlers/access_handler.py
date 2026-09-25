@@ -1,11 +1,13 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from loader import app, logger, ADMIN_CHAT_ID
+from loader import app
 from lang import get_text as _
+from utils.errors import report_error
 from utils.get_admins import get_chat_admins
 from utils.get_data import get_chat_data
 from utils.monitoring import track_command
+from utils.sender import is_sender_admin
 
 
 @app.on_message(filters.command(["access_toggle"]) & filters.group)
@@ -19,7 +21,7 @@ async def access_toggle(client: Client, message: Message):
         lang = chat_config.language
 
         # Проверяем доступ к команде
-        if message.from_user.id not in admins:
+        if not is_sender_admin(message, admins):
             return await message.reply(_("only_admin", lang))
 
         # Переключение прав доступа
@@ -29,6 +31,7 @@ async def access_toggle(client: Client, message: Message):
         await message.reply((_("mention_all", lang)
                             if not chat_config.need_access else _("mention_admin", lang)))
     except Exception as e:
-        logger.error(
-            f"Ошибка при переключении прав доступа в чате: {e}", exc_info=True)
-        await client.send_message(ADMIN_CHAT_ID, f"Произошла ошибка при переключении прав доступа в чате: {e}")
+        await report_error(
+            client, e,
+            "Ошибка при переключении прав доступа в чате",
+            "Произошла ошибка при переключении прав доступа в чате")

@@ -1,9 +1,10 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from loader import app, logger, ADMIN_CHAT_ID
+from loader import app
 from keyboard.keyboard_buttons import keyboard_help
 from lang import get_text as _
+from utils.errors import report_error
 from utils.get_data import get_chat_data
 from utils.monitoring import track_command
 
@@ -27,6 +28,7 @@ async def help_command(client: Client, message: Message):
 
         await message.reply_text(text, reply_markup=keyboard_help, disable_web_page_preview=True,)
     except Exception as e:
-        logger.error(
-            f"Ошибка при отправке сообщения справки в чат: {e}", exc_info=True)
-        await client.send_message(ADMIN_CHAT_ID, f"Произошла ошибка при отправке справки в чат: {e}")
+        await report_error(
+            client, e,
+            "Ошибка при отправке сообщения справки в чат",
+            "Произошла ошибка при отправке справки в чат")
