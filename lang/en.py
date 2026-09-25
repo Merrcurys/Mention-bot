@@ -1,5 +1,9 @@
 from textwrap import dedent
 
+from .premium_emoji import get_emoji
+
+_EMOJI = get_emoji("en")
+
 LEXICON_EN = {
     # ------------------ ENGLISH ------------------ #
 
@@ -15,36 +19,37 @@ LEXICON_EN = {
 
     # Menu
     'help_text_start': dedent(""" 
-        <emoji id=5287630698776110505>😀</emoji><emoji id=5287270733272065330>😀</emoji><emoji id=5289509454910334424>😀</emoji><emoji id=5287695703106134591>😀</emoji><emoji id=5287627636464427992>😀</emoji><emoji id=5287698194187166324>😀</emoji><emoji id=5287762975178892826>😀</emoji>
+        {header_1}{header_2}{header_3}{header_4}{header_5}{header_6}{header_7}
         
-        <emoji id=5287353089269966535>😀</emoji> /help, /command - list of all commands
+        {help} /help, /command - list of all commands
         
-        <emoji id=5287250783148976769>😀</emoji> /all, /here, /everyone - mention all users
-    """),
+        {all} /all, /here, /everyone - mention all users
+    """).format(**_EMOJI),
 
     'help_text_3_many': dedent(""" 
-        <emoji id=5287753603560252687>😀</emoji> /access_toggle - changing access rights for mentions (<emoji id=6037496202990194718>🔒</emoji>)
-    """),
+        {access} /access_toggle - changing access rights for mentions ({lock_all})
+    """).format(**_EMOJI),
 
     'help_text_3_only': dedent(""" 
-        <emoji id=5287753603560252687>😀</emoji> /access_toggle - changing access rights for mentions (<emoji id=6037249452824072506>🔒</emoji>)
-    """),
+        {access} /access_toggle - changing access rights for mentions ({lock_admin})
+    """).format(**_EMOJI),
 
     'help_text_4_show': dedent(""" 
-        <emoji id=5287257182650247240>😀</emoji> /names_visibility - changing visibility of usernames (<emoji id=6037397706505195857>👁</emoji>)
-    """),
+        {visibility} /names_visibility - changing visibility of usernames ({eye_visible})
+    """).format(**_EMOJI),
 
     'help_text_4_hide': dedent(""" 
-        <emoji id=5287257182650247240>😀</emoji> /names_visibility - changing visibility of usernames (<emoji id=6037243349675544634>👁</emoji>)
-    """),
+        {visibility} /names_visibility - changing visibility of usernames ({eye_hidden})
+    """).format(**_EMOJI),
 
-    'help_text_end': dedent(""" 
-        support - @merrcurys
+    'help_text_end': dedent("""
+        author - @merrcurys
+        support - @lisabugx 
         version: [4.3](https://t.me/merrcurys_software/100) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
     """),
 
     # Mention
-    'all_info': "<emoji id=5321097148371058002>⚡️</emoji> Important information",
+    'all_info': "{bolt} Important information".format(**_EMOJI),
 
     # Notifications
     'spam_control': "This command can only be used once per minute.",
@@ -57,12 +62,12 @@ LEXICON_EN = {
     'cannot_send_chat': "⚠️ Couldn't send the message to this chat: the bot has no access or permissions.",
 
     # Access rights to the all command
-    'mention_all': "<emoji id=6037496202990194718>🔒</emoji>Now all chat members can be mentioned.",
-    'mention_admin': "<emoji id=6037249452824072506>🔒</emoji>Now only administrators can mention chat members.",
+    'mention_all': "{lock_all}Now all chat members can be mentioned.".format(**_EMOJI),
+    'mention_admin': "{lock_admin}Now only administrators can mention chat members.".format(**_EMOJI),
 
     # Username display
-    'show_username': "<emoji id=6037397706505195857>👁</emoji>Usernames are now displayed when chat members are mentioned.",
-    'hide_username': "<emoji id=6037243349675544634>👁</emoji>Usernames are now hidden when chat members are mentioned.",
+    'show_username': "{eye_visible}Usernames are now displayed when chat members are mentioned.".format(**_EMOJI),
+    'hide_username': "{eye_hidden}Usernames are now hidden when chat members are mentioned.".format(**_EMOJI),
 
     # Language
     'lang_changed': "The language has been changed.",

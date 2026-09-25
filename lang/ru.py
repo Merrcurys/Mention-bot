@@ -1,5 +1,9 @@
 from textwrap import dedent
 
+from .premium_emoji import get_emoji
+
+_EMOJI = get_emoji("ru")
+
 LEXICON_RU = {
     # ------------------ РУССКИЙ ------------------ #
 
@@ -15,36 +19,37 @@ LEXICON_RU = {
 
     # Меню
     'help_text_start': dedent(""" 
-        <emoji id=5287701007390746028>😀</emoji><emoji id=5287271536430948585>😀</emoji><emoji id=5287716774215689708>😀</emoji><emoji id=5289925796155106922>😀</emoji><emoji id=5287588797075170892>😀</emoji><emoji id=5289543758814127281>😀</emoji><emoji id=5287362237550307187>😀</emoji>
+        {header_1}{header_2}{header_3}{header_4}{header_5}{header_6}{header_7}
                 
-        <emoji id=5287353089269966535>😀</emoji> /help, /command - справка по всем командам
+        {help} /help, /command - справка по всем командам
         
-        <emoji id=5287250783148976769>😀</emoji> /all, /here, /everyone - оповестить всех пользователей
-    """),
+        {all} /all, /here, /everyone - оповестить всех пользователей
+    """).format(**_EMOJI),
 
     'help_text_3_many': dedent(""" 
-        <emoji id=5287753603560252687>😀</emoji> /access_toggle - смена прав доступа к оповещениям (<emoji id=6037496202990194718>🔒</emoji>)
-    """),
+        {access} /access_toggle - смена прав доступа к оповещениям ({lock_all})
+    """).format(**_EMOJI),
 
     'help_text_3_only': dedent(""" 
-        <emoji id=5287753603560252687>😀</emoji> /access_toggle - смена прав доступа к оповещениям (<emoji id=6037249452824072506>🔒</emoji>)
-    """),
+        {access} /access_toggle - смена прав доступа к оповещениям ({lock_admin})
+    """).format(**_EMOJI),
 
     'help_text_4_show': dedent(""" 
-        <emoji id=5287257182650247240>😀</emoji> /names_visibility - смена видимости имен (<emoji id=6037397706505195857>👁</emoji>)
-    """),
+        {visibility} /names_visibility - смена видимости имен ({eye_visible})
+    """).format(**_EMOJI),
 
     'help_text_4_hide': dedent(""" 
-        <emoji id=5287257182650247240>😀</emoji> /names_visibility - смена видимости имен (<emoji id=6037243349675544634>👁</emoji>)
-    """),
+        {visibility} /names_visibility - смена видимости имен ({eye_hidden})
+    """).format(**_EMOJI),
 
-    'help_text_end': dedent(""" 
-        связь - @merrcurys
+    'help_text_end': dedent("""
+        автор - @merrcurys
+        связь - @lisabugx  
         version: [4.3](https://t.me/merrcurys_software/100) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
     """),
 
     # Оповещение
-    'all_info': "<emoji id=5321097148371058002>⚡️</emoji> Важная информация",
+    'all_info': "{bolt} Важная информация".format(**_EMOJI),
 
     # Уведомления
     'spam_control': "Эту команду можно использовать только один раз в минуту.",
@@ -57,12 +62,12 @@ LEXICON_RU = {
     'cannot_send_chat': "⚠️ Не удалось отправить сообщение в этот чат: у бота нет доступа или прав.",
 
     # Права доступа к команде all
-    'mention_all': "<emoji id=6037496202990194718>🔒</emoji>Упоминать участников чата теперь могут все.",
-    'mention_admin': "<emoji id=6037249452824072506>🔒</emoji>Упоминать участников чата теперь могут только администраторы.",
+    'mention_all': "{lock_all}Упоминать участников чата теперь могут все.".format(**_EMOJI),
+    'mention_admin': "{lock_admin}Упоминать участников чата теперь могут только администраторы.".format(**_EMOJI),
 
     # Отображение username
-    'show_username': "<emoji id=6037397706505195857>👁</emoji>При упоминании участников чата юзернеймы теперь отображаются.",
-    'hide_username': "<emoji id=6037243349675544634>👁</emoji>При упоминании участников чата юзернеймы теперь скрыты.",
+    'show_username': "{eye_visible}При упоминании участников чата юзернеймы теперь отображаются.".format(**_EMOJI),
+    'hide_username': "{eye_hidden}При упоминании участников чата юзернеймы теперь скрыты.".format(**_EMOJI),
 
     # Язык
     'lang_changed': "Язык изменен.",
