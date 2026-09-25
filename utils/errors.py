@@ -1,14 +1,22 @@
 from loader import logger, ADMIN_CHAT_ID
 
+try:
+    from pyrogram.errors import TopicClosed
+except ImportError:  # на случай библиотеки без отдельного класса TopicClosed
+    TopicClosed = None
+
 TOPIC_CLOSED_ERROR = "TOPIC_CLOSED"
 
 
 def is_topic_closed(error: Exception) -> bool:
     """Проверяет, что ошибка связана с закрытым топиком.
 
-    В Pyrogram 2.0.106 нет отдельного исключения для TOPIC_CLOSED,
-    поэтому ошибку определяем по её тексту.
+    Kurigram (форк Pyrogram) определяет отдельное исключение TopicClosed,
+    но дополнительно проверяем текст ошибки для совместимости.
     """
+    if TopicClosed is not None and isinstance(error, TopicClosed):
+        return True
+
     return TOPIC_CLOSED_ERROR in str(error)
 
 
