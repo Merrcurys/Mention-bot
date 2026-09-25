@@ -8,13 +8,18 @@ from utils.errors import report_error
 from utils.get_data import get_chat_data
 
 
+# Ограничиваем проверку списка добавленных участников (защита от огромных апдейтов)
+NEW_MEMBERS_CHECK_LIMIT = 75
+
+
 @app.on_message(filters.new_chat_members)
 async def adding_bot_group(client: Client, message: Message):
     """Выводит меню команд при добавлении бота в группу."""
     lang = "en"
     try:
         if message.new_chat_members and any(
-            member.is_self for member in message.new_chat_members
+            member.is_self
+            for member in message.new_chat_members[:NEW_MEMBERS_CHECK_LIMIT]
         ):
             # Получаем конфигурацию чата
             chat_config = await get_chat_data(message)
