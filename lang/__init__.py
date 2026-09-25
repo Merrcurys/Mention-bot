@@ -3,6 +3,22 @@ from importlib import import_module
 
 logger = logging.getLogger(__name__)
 
+SUPPORTED_LANGS = ("ru", "en")
+DEFAULT_LANG = "en"
+
+
+def get_lang_by_code(language_code) -> str:
+    """Определяет язык бота по языку клиента Telegram.
+
+    ``language_code`` — IETF-тег (например, ``ru``, ``ru-RU``, ``en-US``).
+    Если язык не определён или не поддерживается — английский.
+    """
+    if not language_code:
+        return DEFAULT_LANG
+
+    primary = str(language_code).replace("_", "-").split("-")[0].lower()
+    return primary if primary in SUPPORTED_LANGS else DEFAULT_LANG
+
 
 def get_lexicon(lang):
     """Возвращает словарь лексикона для указанного языка."""
