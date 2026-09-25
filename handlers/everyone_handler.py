@@ -1,6 +1,8 @@
 import asyncio
 import time
-from pyrogram import Client, filters
+from html import escape
+
+from pyrogram import Client, enums, filters
 from pyrogram.types import Message
 
 from loader import app
@@ -11,6 +13,8 @@ from utils.get_data import get_chat_data
 from utils.sender import get_sender_id, is_sender_admin
 
 
+MAX_USERS = 75
+BATCH_SIZE = 5
 # chat_id -> время (monotonic), до которого команда недоступна
 frozen_commands = {}
 FROZEN_SECONDS = 60
@@ -35,24 +39,28 @@ async def everyone_command(client: Client, message: Message):
     try:
         # Получаем конфигурацию чата
         chat_config = await get_chat_data(message)
-        admins = await get_chat_admins(message)
         lang = chat_config.language
 
-        # Проверяем доступ к команде
-        if chat_config.need_access and not is_sender_admin(message, admins):
-            return await message.reply(_("only_admin", lang))
-
-        # Проверяем количество пользователей
-        if len([member async for member in app.get_chat_members(message.chat.id)]) > 75:
-            return await message.reply(_("many_users", lang))
+        # Проверяем доступ к команде (админов запрашиваем только при необходимости)
+        if chat_config.need_access:
+            admins = await get_chat_admins(message)
+            if not is_sender_admin(message, admins):
+                return await message.reply(_("only_admin", lang))
 
         # Проверяем заморожена ли команда
         if _is_frozen(message.chat.id):
             return await message.reply(_("spam_control", lang))
 
+        # Собираем участников (без ботов, удалённых и отправителя)
+        users = await collect_users(message)
+        if users is None:
+            return await message.reply(_("many_users", lang))
+        if not users:
+            return await message.reply(_("no_users_found", lang))
+
         # Замораживаем сразу, до отправки, чтобы параллельные /all не дублировались
         _freeze(message.chat.id)
-        await send_user_links(message, chat_config, lang)
+        await send_user_links(message, users, chat_config, lang)
     except Exception as e:
         await report_error(
             app, e,
@@ -61,46 +69,56 @@ async def everyone_command(client: Client, message: Message):
             message=message, lang=lang)
 
 
-async def send_user_links(message: Message, chat_config, lang):
-    """Отправка сообщений с сылками на пользователей в чате."""
+async def collect_users(message: Message):
+    """Возвращает список участников для оповещения.
+
+    Пропускает ботов, удалённых пользователей и самого отправителя.
+    Если подходящих больше MAX_USERS — возвращает None, не вычитывая
+    список участников целиком.
+    """
+    sender_id = get_sender_id(message)
+    users = []
+
+    async for member in app.get_chat_members(message.chat.id):
+        user = member.user
+        if user.is_bot or user.is_deleted or sender_id == user.id:
+            continue
+
+        users.append(user)
+        if len(users) > MAX_USERS:
+            return None
+
+    return users
+
+
+async def send_user_links(message: Message, users, chat_config, lang):
+    """Отправляет сообщения со ссылками на пользователей в чате."""
     try:
         link_users = []
-        users_found = False
-        sender_id = get_sender_id(message)
 
-        # Получаем список пользователей этого чата
-        async for user in app.get_chat_members(message.chat.id):
-            # Пропускаем ботов, удаленных пользователей и самого отправителя сообщения
-            if user.user.is_bot or user.user.is_deleted or sender_id == user.user.id:
-                continue
-
-            # Указываем что сообщение было выведено хотя бы 1 раз
-            users_found = True
-
+        for user in users:
             # Формируем ссылку на пользователя
             if chat_config.is_nickname_visible:
-                # Используем юзернейм, если он есть, иначе имя пользователя для ссылки
-                link_users.append(
-                    f"[@{user.user.username or user.user.first_name}, ](tg://user?id={user.user.id})")
+                # Имя экранируем, чтобы символы [ ] ( ) _ * не ломали разметку
+                name = escape(user.username or user.first_name or str(user.id))
+                link_users.append(f'<a href="tg://user?id={user.id}">@{name}</a>, ')
             else:
                 # Используем невидимый символ (U+200b) для скрытия имени пользователя
-                link_users.append(f"[​](tg://user?id={user.user.id})")
+                link_users.append(f'<a href="tg://user?id={user.id}">\u200b</a>')
 
-            # Отправляем сообщение каждые 5 пользователей
-            if len(link_users) == 5:  # ограничение Telegram'а на 5 оповещений в одном сообщении
+            # Отправляем сообщение каждые BATCH_SIZE пользователей
+            if len(link_users) == BATCH_SIZE:  # ограничение Telegram'а на 5 оповещений в одном сообщении
                 batch = f"{_('all_info', lang)}\n{''.join(link_users)}"
-                await call_with_flood_wait(lambda: message.reply(batch))
+                await call_with_flood_wait(
+                    lambda: message.reply_text(batch, parse_mode=enums.ParseMode.HTML))
                 link_users = []
                 await asyncio.sleep(1)  # мягкий троттлинг, чтобы реже ловить FLOOD_WAIT
 
         # Отправляем оставшихся пользователей, если они есть
         if link_users:
             batch = f"{_('all_info', lang)}\n{''.join(link_users)}"
-            await call_with_flood_wait(lambda: message.reply(batch))
-
-        # Отправляем сообщение, если пользователей не было найдено
-        elif not users_found:
-            await call_with_flood_wait(lambda: message.reply(_('no_users_found', lang)))
+            await call_with_flood_wait(
+                lambda: message.reply_text(batch, parse_mode=enums.ParseMode.HTML))
 
     except Exception as e:
         await report_error(

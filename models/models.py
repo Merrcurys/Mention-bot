@@ -6,7 +6,7 @@ from models.base import BaseModel
 class ChatConfig(BaseModel):
     """Таблица с конфигурацией чатов."""
     id = peewee.PrimaryKeyField()
-    chat_id = peewee.IntegerField()
+    chat_id = peewee.IntegerField(unique=True)
     need_access = peewee.BooleanField(default=False)
     is_nickname_visible = peewee.BooleanField(default=True)
     language = peewee.CharField(max_length=3, default='en')

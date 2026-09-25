@@ -1,3 +1,5 @@
+import asyncio
+
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
@@ -23,12 +25,15 @@ async def names_visibility_toggle(client: Client, message: Message):
         if not is_sender_admin(message, admins):
             return await message.reply(_("only_admin", lang))
 
-        # Переключение видимости никнеймов
-        chat_config.is_nickname_visible = not chat_config.is_nickname_visible
-        chat_config.save()
+        # Сначала подтверждаем в чате, и только потом сохраняем настройку,
+        # чтобы в закрытом топике она не менялась молча
+        new_visibility = not chat_config.is_nickname_visible
+        await message.reply(
+            _("show_username", lang)
+            if new_visibility else _("hide_username", lang))
 
-        await message.reply(_("show_username", lang)
-                            if chat_config.is_nickname_visible else _("hide_username", lang))
+        chat_config.is_nickname_visible = new_visibility
+        await asyncio.to_thread(chat_config.save)
     except Exception as e:
         await report_error(
             client, e,

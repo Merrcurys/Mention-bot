@@ -1,3 +1,5 @@
+import asyncio
+
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
@@ -23,12 +25,15 @@ async def access_toggle(client: Client, message: Message):
         if not is_sender_admin(message, admins):
             return await message.reply(_("only_admin", lang))
 
-        # Переключение прав доступа
-        chat_config.need_access = not chat_config.need_access
-        chat_config.save()
+        # Сначала подтверждаем в чате, и только потом сохраняем настройку,
+        # чтобы в закрытом топике она не менялась молча
+        new_need_access = not chat_config.need_access
+        await message.reply(
+            _("mention_all", lang)
+            if not new_need_access else _("mention_admin", lang))
 
-        await message.reply((_("mention_all", lang)
-                            if not chat_config.need_access else _("mention_admin", lang)))
+        chat_config.need_access = new_need_access
+        await asyncio.to_thread(chat_config.save)
     except Exception as e:
         await report_error(
             client, e,
