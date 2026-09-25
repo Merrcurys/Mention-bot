@@ -24,7 +24,7 @@ async def help_command(client: Client, message: Message):
             _(help_4_command, chat_config.language) + \
             _("help_text_end", chat_config.language)
 
-        await message.reply_text(text, reply_markup=keyboard_help, disable_web_page_preview=True,)
+        await message.reply_text(text, reply_markup=keyboard_help)
     except Exception as e:
         await report_error(
             client, e,

@@ -11,7 +11,7 @@ async def start_command(client: Client, message: Message):
     """Выводит инфо сообщение с кнопкой для добавления бота в группу."""
     try:
         await message.reply_text(_('start_text'),
-                                 reply_markup=keyboard_start_gb, disable_web_page_preview=True,)
+                                 reply_markup=keyboard_start_gb)
     except Exception as e:
         logger.error(
             f"Ошибка при отправке стартового сообщения пользователю: {e}", exc_info=True)

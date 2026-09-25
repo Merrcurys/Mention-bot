@@ -4,6 +4,7 @@ from pathlib import Path
 from peewee import SqliteDatabase
 from decouple import config
 from pyrogram import Client
+from pyrogram.types import LinkPreviewOptions
 
 
 # Получение конфигурационных переменных из .env файла
@@ -26,7 +27,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Создание экземпляра бота и диспетчера для обработки сообщений
-app = Client("bot", api_hash=API_HASH, api_id=API_ID, bot_token=API_TOKEN)
+# Превью ссылок отключено глобально (disable_web_page_preview устарел в Kurigram)
+app = Client(
+    "bot",
+    api_hash=API_HASH,
+    api_id=API_ID,
+    bot_token=API_TOKEN,
+    link_preview_options=LinkPreviewOptions(is_disabled=True),
+)
 
 # Инициализация экземпляра базы данных
 database = SqliteDatabase(

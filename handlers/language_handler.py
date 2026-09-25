@@ -19,7 +19,7 @@ async def handle_change_lang(client: Client, query):
             keybord = keyboard_start_ru if lang == "ru" else keyboard_start_gb
 
             await query.message.edit_text(_("start_text", lang),
-                                          reply_markup=keybord, disable_web_page_preview=True,)
+                                          reply_markup=keybord)
             return await query.answer(_("lang_changed", lang))
         else:
             # Получаем конфигурацию чата
@@ -46,7 +46,7 @@ async def handle_change_lang(client: Client, query):
 
             chat_config.save()
             await query.message.edit_text(_(text, lang),
-                                          reply_markup=keyboard_help, disable_web_page_preview=True,)
+                                          reply_markup=keyboard_help)
             await query.answer(_("lang_changed", lang))
     except Exception as e:
         logger.error(f"Ошибка при обработке смены языка: {e}", exc_info=True)

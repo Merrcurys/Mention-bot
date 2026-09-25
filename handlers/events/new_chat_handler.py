@@ -16,10 +16,18 @@ async def adding_bot_group(client: Client, message: Message):
 
             # Получаем конфигурацию чата
             chat_config = await get_chat_data(message)
-            lang = chat_config.language
 
-            await client.send_message(chat_id, _("help_text", lang),
-                                      reply_markup=keyboard_help, disable_web_page_preview=True)
+            # Получаем статус по командам
+            help_3_command = "help_text_3_only" if chat_config.need_access else "help_text_3_many"
+            help_4_command = "help_text_4_show" if chat_config.is_nickname_visible else "help_text_4_hide"
+
+            # Формируем текст
+            text = _("help_text_start", chat_config.language) + \
+                _(help_3_command, chat_config.language) + \
+                _(help_4_command, chat_config.language) + \
+                _("help_text_end", chat_config.language)
+
+            await client.send_message(chat_id, text, reply_markup=keyboard_help)
     except Exception as e:
         logger.error(
             f"Ошибка при обработке добавления бота в чат: {e}", exc_info=True)
