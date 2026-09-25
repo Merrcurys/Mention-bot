@@ -25,8 +25,7 @@ async def names_visibility_toggle(client: Client, message: Message):
         if not is_sender_admin(message, admins):
             return await message.reply(_("only_admin", lang))
 
-        # Сначала подтверждаем в чате, и только потом сохраняем настройку,
-        # чтобы в закрытом топике она не менялась молча
+        # Сначала подтверждаем в чате, и только потом сохраняем настройку
         new_visibility = not chat_config.is_nickname_visible
         await message.reply(
             _("show_username", lang)

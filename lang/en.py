@@ -45,7 +45,7 @@ LEXICON_EN = {
     'help_text_end': dedent("""
         author - @merrcurys
         support - @lisabugx 
-        version: [4.3](https://t.me/merrcurys_software/100) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
+        version: [5.0](https://t.me/merrcurys_software/178) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
     """),
 
     # Mention
