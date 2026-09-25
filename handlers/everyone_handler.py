@@ -1,17 +1,31 @@
 import asyncio
-from pyrogram import Client, filters, enums
+import time
+from pyrogram import Client, filters
 from pyrogram.types import Message
 
 from loader import app
 from lang import get_text as _
-from utils.errors import report_error
+from utils.errors import call_with_flood_wait, report_error
 from utils.get_admins import get_chat_admins
 from utils.get_data import get_chat_data
 from utils.sender import get_sender_id, is_sender_admin
 
 
-# словарь для хранения "замороженных" команд
+# chat_id -> время (monotonic), до которого команда недоступна
 frozen_commands = {}
+FROZEN_SECONDS = 60
+
+
+def _is_frozen(chat_id: int) -> bool:
+    until = frozen_commands.get(chat_id)
+    return until is not None and time.monotonic() < until
+
+
+def _freeze(chat_id: int) -> None:
+    now = time.monotonic()
+    for expired in [cid for cid, until in frozen_commands.items() if until <= now]:
+        frozen_commands.pop(expired, None)
+    frozen_commands[chat_id] = now + FROZEN_SECONDS
 
 
 @app.on_message(filters.command(["all", "here", "everyone"]) & filters.group)
@@ -32,14 +46,12 @@ async def everyone_command(client: Client, message: Message):
             return await message.reply(_("many_users", lang))
 
         # Проверяем заморожена ли команда
-        if message.chat.id in frozen_commands:
+        if _is_frozen(message.chat.id):
             return await message.reply(_("spam_control", lang))
 
-        # Выполняем команду и замораживаем на 60 секунд
+        # Замораживаем сразу, до отправки, чтобы параллельные /all не дублировались
+        _freeze(message.chat.id)
         await send_user_links(message, chat_config, lang)
-        frozen_commands[message.chat.id] = True
-        await asyncio.sleep(60)
-        del frozen_commands[message.chat.id]
     except Exception as e:
         await report_error(
             app, e,
@@ -74,16 +86,19 @@ async def send_user_links(message: Message, chat_config, lang):
 
             # Отправляем сообщение каждые 5 пользователей
             if len(link_users) == 5:  # ограничение Telegram'а на 5 оповещений в одном сообщении
-                await message.reply(f"{_('all_info', lang)}{''.join(link_users)}")
+                batch = f"{_('all_info', lang)}{''.join(link_users)}"
+                await call_with_flood_wait(lambda: message.reply(batch))
                 link_users = []
+                await asyncio.sleep(1)  # мягкий троттлинг, чтобы реже ловить FLOOD_WAIT
 
         # Отправляем оставшихся пользователей, если они есть
         if link_users:
-            await message.reply(f"{_('all_info', lang)}{''.join(link_users)}")
+            batch = f"{_('all_info', lang)}{''.join(link_users)}"
+            await call_with_flood_wait(lambda: message.reply(batch))
 
         # Отправляем сообщение, если пользователей не было найдено
         elif not users_found:
-            await message.reply(_('no_users_found', lang))
+            await call_with_flood_wait(lambda: message.reply(_('no_users_found', lang)))
 
     except Exception as e:
         await report_error(

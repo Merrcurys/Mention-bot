@@ -1,9 +1,10 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from loader import app, logger, ADMIN_CHAT_ID
+from loader import app
 from keyboard.keyboard_buttons import keyboard_help
 from lang import get_text as _
+from utils.errors import report_error
 from utils.get_data import get_chat_data
 
 
@@ -29,6 +30,7 @@ async def adding_bot_group(client: Client, message: Message):
 
             await client.send_message(chat_id, text, reply_markup=keyboard_help)
     except Exception as e:
-        logger.error(
-            f"Ошибка при обработке добавления бота в чат: {e}", exc_info=True)
-        await client.send_message(ADMIN_CHAT_ID, f"Произошла ошибка при добавлении в чат.")
+        await report_error(
+            client, e,
+            "Ошибка при обработке добавления бота в чат",
+            "Произошла ошибка при добавлении в чат")
