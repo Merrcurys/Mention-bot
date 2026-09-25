@@ -9,6 +9,4 @@ COPY . .
 
 RUN touch /app/logs.log
 
-EXPOSE 8001
-
 CMD ["python", "bot.py"]

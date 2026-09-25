@@ -6,12 +6,10 @@ from lang import get_text as _
 from utils.errors import report_error
 from utils.get_admins import get_chat_admins
 from utils.get_data import get_chat_data
-from utils.monitoring import track_command
 from utils.sender import is_sender_admin
 
 
 @app.on_message(filters.command(["access_toggle"]) & filters.group)
-@track_command("access_toggle")
 async def access_toggle(client: Client, message: Message):
     """Обработчик переключения прав доступа"""
     try:

@@ -7,7 +7,6 @@ from lang import get_text as _
 from utils.errors import report_error
 from utils.get_admins import get_chat_admins
 from utils.get_data import get_chat_data
-from utils.monitoring import track_command
 from utils.sender import get_sender_id, is_sender_admin
 
 
@@ -16,7 +15,6 @@ frozen_commands = {}
 
 
 @app.on_message(filters.command(["all", "here", "everyone"]) & filters.group)
-@track_command("everyone")
 async def everyone_command(client: Client, message: Message):
     """Обработчик команды для оповещения всех пользователей."""
     try:

@@ -8,11 +8,3 @@ services:
     volumes:
       - ./database.sqlite3:/app/database.sqlite3
       - ./logs.log:/app/logs.log
-    ports:
-      - "8001:8001"
-    networks:
-      - monitoring_system
-
-networks:
-  monitoring_system:
-    external: true

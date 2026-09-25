@@ -6,12 +6,10 @@ from lang import get_text as _
 from utils.errors import report_error
 from utils.get_admins import get_chat_admins
 from utils.get_data import get_chat_data
-from utils.monitoring import track_command
 from utils.sender import is_sender_admin
 
 
 @app.on_message(filters.command(["names_visibility"]) & filters.group)
-@track_command("names_visibility")
 async def names_visibility_toggle(client: Client, message: Message):
     """Обработчик переключения видимости никнеймов"""
     try:

@@ -6,11 +6,9 @@ from keyboard.keyboard_buttons import keyboard_help
 from lang import get_text as _
 from utils.errors import report_error
 from utils.get_data import get_chat_data
-from utils.monitoring import track_command
 
 
 @app.on_message(filters.command(["help", "command"]) & filters.group)
-@track_command("help")
 async def help_command(client: Client, message: Message):
     """Выводит справку по всем командам."""
     try:

@@ -1,13 +1,9 @@
 import logging
-import time
 from pathlib import Path
-from threading import Thread
 
 from peewee import SqliteDatabase
 from decouple import config
 from pyrogram import Client
-from prometheus_client import start_http_server
-from utils.monitoring import initialize_metrics, update_database_metrics
 
 
 # Получение конфигурационных переменных из .env файла
@@ -37,36 +33,3 @@ database = SqliteDatabase(
     "database.sqlite3",
     pragmas={"foreign_keys": 1},
 )
-
-
-# Запуск  Prometheus
-def start_metrics_server():
-    start_http_server(8001)
-
-
-def update_metrics_periodically():
-    """Периодически обновляет метрики из БД"""
-    time.sleep(2)  # Ждем инициализации БД
-    while True:
-        try:
-            update_database_metrics()
-            time.sleep(60)  # Обновляем каждую минуту
-        except Exception as e:
-            logger.error(f"Ошибка в потоке обновления метрик: {e}")
-            time.sleep(60)
-
-
-metrics_thread = Thread(target=start_metrics_server, daemon=True)
-metrics_thread.start()
-
-# Поток для периодического обновления метрик из БД
-metrics_update_thread = Thread(
-    target=update_metrics_periodically, daemon=True)
-metrics_update_thread.start()
-
-# Инициализируем метрики с нулевыми значениями после запуска сервера
-# Это нужно, чтобы метрики были видны в Prometheus даже до первого использования
-time.sleep(0.5)  # Небольшая задержка для запуска сервера
-initialize_metrics()
-time.sleep(1)  # Дополнительная задержка для БД
-update_database_metrics()

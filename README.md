@@ -66,26 +66,7 @@ python bot.py
 
 ## Установка через Docker
 
-(Необязательно): Установите Grafana и Prometheus и настройте Prometheus для получения данных с Mention Bot И создайте общую сеть Docker:
-```bash
-docker network create monitoring_system
-```
-Запустите grafana и prometheus:
-   ```bash
-   docker-compose up -d
-   ```
-
 Запустите Mention Bot:
    ```bash
    docker-compose up -d
    ```
-
-## Prometheus
-
-- **Метрики бота**: http://localhost:8001/metrics
-
-## Grafana
-
-<p align="center">
-      <img src="https://github.com/user-attachments/assets/e03c3605-c582-4590-a983-1996b21b4a69" alt="Grafana" width="726">
-</p>
