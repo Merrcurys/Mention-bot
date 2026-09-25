@@ -74,3 +74,21 @@ python bot.py
    ```bash
    docker-compose up -d
    ```
+## Участники проекта
+
+<a href="https://github.com/Merrcurys/Mention-bot/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Merrcurys/Mention-bot&max=300&columns=15" />
+</a>
+
+## История популярности проекта
+
+<a href="https://star-history.com/#Merrcurys/Mention-bot&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Merrcurys/Mention-bot&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Merrcurys/Mention-bot&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Merrcurys/Mention-bot&type=Date" />
+ </picture>
+</a>
+
+## Лицензия
+Mention Bot распространяется под лицензией GNU GPL-3.0.
