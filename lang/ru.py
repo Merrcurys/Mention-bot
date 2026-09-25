@@ -13,7 +13,7 @@ LEXICON_RU = {
 
         Бот может оповещать всех в группе до 75 пользователей, может изменять права доступа к командам, а также скрывать никнеймы при оповещении.     
         
-        техподдержка - @merrcurys
+        связь - @merrcurys
         [github](https://github.com/Merrcurys/Mention-bot) | [news](https://t.me/merrcurys_software/41) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)          
     """),
 

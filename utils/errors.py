@@ -1,7 +1,7 @@
 import asyncio
 
 from loader import logger, ADMIN_CHAT_ID
-from lang import get_text as _
+from lang import get_lang_by_code, get_text as _
 
 try:
     from pyrogram.errors import TopicClosed
@@ -98,13 +98,15 @@ async def notify_cannot_send(client, message, error: Exception, lang: str = "en"
 
     Порядок: личное сообщение → общий (General) топик → только лог.
     """
-    text = _("cannot_send_topic", lang) if is_topic_closed(error) else _("cannot_send_chat", lang)
+    key = "cannot_send_topic" if is_topic_closed(error) else "cannot_send_chat"
+    text = _(key, lang)
 
-    # 1. Личное сообщение инициатору
+    # 1. Личное сообщение инициатору — на языке его клиента Telegram
     user = getattr(message, "from_user", None)
     if user is not None:
+        dm_lang = get_lang_by_code(getattr(user, "language_code", None))
         try:
-            await client.send_message(user.id, text)
+            await client.send_message(user.id, _(key, dm_lang))
             return
         except Exception as dm_error:
             logger.warning(f"Не удалось уведомить в ЛС: {dm_error}")
