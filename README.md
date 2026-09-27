@@ -1,7 +1,7 @@
 # Mention Bot
 
 <p align="center">
-      <img src="https://i.ibb.co/2nW3Bq7/avatar6517195165-2-out-1.jpg" alt="Project Logo" width="726">
+      <img src="https://github.com/user-attachments/assets/65f94fdb-fd31-4348-b4fd-e4471d46b254" alt="Project Logo" width="726">
 </p>
 
 > ⚠️ **Внимание!** Из-за ограничений Telegram в России бот может работать не стабильно.
