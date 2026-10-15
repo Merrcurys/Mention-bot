@@ -22,6 +22,7 @@ PREMIUM_EMOJI = {
         "eye_visible": "<emoji id=6037397706505195857>👁</emoji>",
         "eye_hidden": "<emoji id=6037243349675544634>👁</emoji>",
         "bolt": "<emoji id=5321097148371058002>⚡️</emoji>",
+        "warning": "<emoji id=5276240711795107620>☺️</emoji>",
     },
     "en": {
         "header_1": "<emoji id=5287630698776110505>😀</emoji>",
@@ -40,6 +41,7 @@ PREMIUM_EMOJI = {
         "eye_visible": "<emoji id=6037397706505195857>👁</emoji>",
         "eye_hidden": "<emoji id=6037243349675544634>👁</emoji>",
         "bolt": "<emoji id=5321097148371058002>⚡️</emoji>",
+        "warning": "<emoji id=5276240711795107620>☺️</emoji>",
     },
 }
 

@@ -45,21 +45,22 @@ LEXICON_EN = {
     'help_text_end': dedent("""
         author - @merrcurys
         support - @lisabugx 
-        version: [5.0](https://t.me/merrcurys_software/178) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
+        version: [5.1](https://t.me/merrcurys_software/186) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
     """),
 
     # Mention
     'all_info': "{bolt} Important information".format(**_EMOJI),
 
     # Notifications
-    'spam_control': "This command can only be used once per minute.",
+    'spam_control': "This command can only be used once per minute. {seconds} seconds left.",
+    'slowmode_admin_hint': "{warning} Slow mode is enabled in this chat. Grant the bot admin rights so it doesn't depend on slow mode.\n\n".format(**_EMOJI),
     'many_users': "This command can be used only if there are no more than 75 users in the chat.",
     'only_admin': "Only administrators can use this command.",
     'no_users_found': "In this chat, there is no one to mention except you.",
 
     # Failed to send a message to a topic/chat
-    'cannot_send_topic': "⚠️ Couldn't send the message: this topic is closed.",
-    'cannot_send_chat': "⚠️ Couldn't send the message to this chat: the bot has no access or permissions.",
+    'cannot_send_topic': "{warning} Couldn't send the message: this topic is closed.".format(**_EMOJI),
+    'cannot_send_chat': "{warning} Couldn't send the message to this chat: the bot has no access or permissions.".format(**_EMOJI),
 
     # Access rights to the all command
     'mention_all': "{lock_all}Now all chat members can be mentioned.".format(**_EMOJI),

@@ -1,4 +1,5 @@
 import asyncio
+import math
 import time
 from html import escape
 
@@ -15,6 +16,7 @@ from utils.sender import get_sender_id, is_sender_admin
 
 MAX_USERS = 75
 BATCH_SIZE = 5
+MIN_SEND_DELAY = 1
 # chat_id -> время (monotonic), до которого команда недоступна
 frozen_commands = {}
 FROZEN_SECONDS = 60
@@ -23,6 +25,14 @@ FROZEN_SECONDS = 60
 def _is_frozen(chat_id: int) -> bool:
     until = frozen_commands.get(chat_id)
     return until is not None and time.monotonic() < until
+
+
+def _seconds_left(chat_id: int) -> int:
+    """Сколько секунд осталось до снятия заморозки команды."""
+    until = frozen_commands.get(chat_id)
+    if until is None:
+        return 0
+    return max(0, math.ceil(until - time.monotonic()))
 
 
 def _freeze(chat_id: int) -> None:
@@ -49,7 +59,8 @@ async def everyone_command(client: Client, message: Message):
 
         # Проверяем заморожена ли команда
         if _is_frozen(message.chat.id):
-            return await message.reply(_("spam_control", lang))
+            text = _("spam_control", lang).format(seconds=_seconds_left(message.chat.id))
+            return await message.reply(text)
 
         # Собираем участников (без ботов, удалённых и отправителя)
         users = await collect_users(message)
@@ -91,9 +102,54 @@ async def collect_users(message: Message):
     return users
 
 
+async def get_slowmode_delay(chat_id: int) -> int:
+    """Медленный режим чата в секундах (0, если выключен).
+
+    Telegram не отдаёт slowmode в апдейте, поэтому запрашиваем чат.
+    """
+    try:
+        chat = await app.get_chat(chat_id)
+    except Exception:
+        return 0
+    return int(getattr(chat, "slow_mode_delay", 0) or 0)
+
+
+async def is_bot_admin(chat_id: int) -> bool:
+    """Является ли сам бот администратором чата."""
+    try:
+        member = await app.get_chat_member(chat_id, app.me.id)
+    except Exception:
+        return False
+    return member.status in (
+        enums.ChatMemberStatus.ADMINISTRATOR,
+        enums.ChatMemberStatus.OWNER,
+    )
+
+
+def _format_batch(prefix: str, links: str, lang: str, visible: bool) -> str:
+    """Собирает текст сообщения с оповещениями.
+
+    Видимые имена идут с новой строки под заголовком, а скрытые ссылки
+    (из невидимых символов) — на первой строке, без отступа.
+    """
+    header = f"{prefix}{_('all_info', lang)}"
+    return f"{header}\n{links}" if visible else f"{header}{links}"
+
+
 async def send_user_links(message: Message, users, chat_config, lang):
     """Отправляет сообщения со ссылками на пользователей в чате."""
     try:
+        # В чате с медленным режимом шлём не чаще, чем разрешено, чтобы
+        # не ловить SLOWMODE_WAIT и не ждать лишний раз в ретраях.
+        slowmode = await get_slowmode_delay(message.chat.id)
+        delay = max(MIN_SEND_DELAY, slowmode)
+
+        # Если чат в медленном режиме, а бот не админ — ограничение
+        # действует и на него. Предупреждаем об этом в первом сообщении.
+        prefix = ""
+        if slowmode and not await is_bot_admin(message.chat.id):
+            prefix = _("slowmode_admin_hint", lang)
+
         link_users = []
 
         for user in users:
@@ -108,15 +164,18 @@ async def send_user_links(message: Message, users, chat_config, lang):
 
             # Отправляем сообщение каждые BATCH_SIZE пользователей
             if len(link_users) == BATCH_SIZE:  # ограничение Telegram'а на 5 оповещений в одном сообщении
-                batch = f"{_('all_info', lang)}\n{''.join(link_users)}"
+                batch = _format_batch(
+                    prefix, ''.join(link_users), lang, chat_config.is_nickname_visible)
                 await call_with_flood_wait(
                     lambda: message.reply_text(batch, parse_mode=enums.ParseMode.HTML))
+                prefix = ""
                 link_users = []
-                await asyncio.sleep(1)  # мягкий троттлинг, чтобы реже ловить FLOOD_WAIT
+                await asyncio.sleep(delay)  # пауза под медленный режим чата
 
         # Отправляем оставшихся пользователей, если они есть
         if link_users:
-            batch = f"{_('all_info', lang)}\n{''.join(link_users)}"
+            batch = _format_batch(
+                prefix, ''.join(link_users), lang, chat_config.is_nickname_visible)
             await call_with_flood_wait(
                 lambda: message.reply_text(batch, parse_mode=enums.ParseMode.HTML))
 

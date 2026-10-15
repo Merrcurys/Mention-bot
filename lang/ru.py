@@ -45,21 +45,22 @@ LEXICON_RU = {
     'help_text_end': dedent("""
         автор - @merrcurys
         связь - @lisabugx  
-        version: [5.0](https://t.me/merrcurys_software/178) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
+        version: [5.1](https://t.me/merrcurys_software/186) | [faq](https://telegra.ph/FAQ-po-Mention-bot-02-05)
     """),
 
     # Оповещение
     'all_info': "{bolt} Важная информация".format(**_EMOJI),
 
     # Уведомления
-    'spam_control': "Эту команду можно использовать только один раз в минуту.",
+    'spam_control': "Эту команду можно использовать только один раз в минуту. Осталось {seconds} секунд.",
+    'slowmode_admin_hint': "{warning} В чате включён медленный режим. Выдайте боту права администратора, чтобы он не зависел от медленного режима.\n\n".format(**_EMOJI),
     'many_users': "Эту команду можно использовать, если в чате не больше 75 пользователей.",
     'only_admin': "Только администраторы могут использовать данную команду.",
     'no_users_found': "В этом чате кроме вас некого оповещать.",
 
     # Не удалось отправить сообщение в топик/чат
-    'cannot_send_topic': "⚠️ Не удалось отправить сообщение: этот топик закрыт.",
-    'cannot_send_chat': "⚠️ Не удалось отправить сообщение в этот чат: у бота нет доступа или прав.",
+    'cannot_send_topic': "{warning} Не удалось отправить сообщение: этот топик закрыт.".format(**_EMOJI),
+    'cannot_send_chat': "{warning} Не удалось отправить сообщение в этот чат: у бота нет доступа или прав.".format(**_EMOJI),
 
     # Права доступа к команде all
     'mention_all': "{lock_all}Упоминать участников чата теперь могут все.".format(**_EMOJI),
