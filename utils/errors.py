@@ -13,8 +13,14 @@ try:
 except ImportError:
     FloodWait = None
 
+try:
+    from pyrogram.errors import SlowmodeWait
+except ImportError:
+    SlowmodeWait = None
+
 TOPIC_CLOSED_ERROR = "TOPIC_CLOSED"
 FLOOD_WAIT_ERROR = "FLOOD_WAIT"
+SLOWMODE_WAIT_ERROR = "SLOWMODE_WAIT"
 CHAT_UNAVAILABLE_ERRORS = (
     "CHANNEL_PRIVATE",
     "CHAT_WRITE_FORBIDDEN",
@@ -44,6 +50,31 @@ def is_flood_wait(error: Exception) -> bool:
     return FLOOD_WAIT_ERROR in str(error)
 
 
+def is_slowmode_wait(error: Exception) -> bool:
+    """Проверяет, что в чате включён медленный режим (SLOWMODE_WAIT).
+
+    Telegram отвечает этой ошибкой, когда бот не является администратором
+    и не успевает за ограничением на частоту сообщений.
+    """
+    if SlowmodeWait is not None and isinstance(error, SlowmodeWait):
+        return True
+
+    return SLOWMODE_WAIT_ERROR in str(error)
+
+
+def is_wait_error(error: Exception) -> bool:
+    """Ошибки, требующие просто подождать и повторить запрос."""
+    return is_flood_wait(error) or is_slowmode_wait(error)
+
+
+def _wait_seconds(error: Exception) -> int:
+    """Извлекает количество секунд ожидания из FLOOD_WAIT/SLOWMODE_WAIT."""
+    try:
+        return int(getattr(error, "value", 0) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
 def is_chat_unavailable(error: Exception) -> bool:
     """Ошибки, при которых бот в принципе не может писать в чат.
 
@@ -56,7 +87,7 @@ def is_chat_unavailable(error: Exception) -> bool:
 
 
 async def call_with_flood_wait(coro_factory, max_retries: int = 3):
-    """Выполняет корутину, пережидая FLOOD_WAIT и повторяя запрос.
+    """Выполняет корутину, пережидая FLOOD_WAIT/SLOWMODE_WAIT и повторяя запрос.
 
     coro_factory — функция без аргументов, возвращающая новую корутину:
     await call_with_flood_wait(lambda: message.reply(text)).
@@ -65,16 +96,13 @@ async def call_with_flood_wait(coro_factory, max_retries: int = 3):
         try:
             return await coro_factory()
         except Exception as error:
-            if not is_flood_wait(error) or attempt == max_retries:
+            if not is_wait_error(error) or attempt == max_retries:
                 raise
 
-            try:
-                wait = int(getattr(error, "value", 0) or 0)
-            except (TypeError, ValueError):
-                wait = 0
-
+            wait = _wait_seconds(error)
+            kind = "SLOWMODE_WAIT" if is_slowmode_wait(error) else "FLOOD_WAIT"
             logger.warning(
-                f"FLOOD_WAIT: ждём {wait} c и повторяем отправку "
+                f"{kind}: ждём {wait} c и повторяем отправку "
                 f"(попытка {attempt + 1}/{max_retries})")
             await asyncio.sleep(wait + 1)
 
@@ -142,8 +170,8 @@ async def report_error(
             await notify_cannot_send(client, message, error, lang)
         return
 
-    if is_flood_wait(error):
-        logger.warning(f"{log_message} (flood wait): {error}")
+    if is_wait_error(error):
+        logger.warning(f"{log_message} (flood/slowmode wait): {error}")
         return
 
     if is_chat_unavailable(error):
