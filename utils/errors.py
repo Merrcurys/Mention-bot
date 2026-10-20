@@ -24,6 +24,7 @@ SLOWMODE_WAIT_ERROR = "SLOWMODE_WAIT"
 CHAT_UNAVAILABLE_ERRORS = (
     "CHANNEL_PRIVATE",
     "CHAT_WRITE_FORBIDDEN",
+    "CHAT_SEND_PLAIN_FORBIDDEN",
     "USER_BANNED_IN_CHANNEL",
     "CHAT_ADMIN_REQUIRED",
 )
@@ -79,6 +80,7 @@ def is_chat_unavailable(error: Exception) -> bool:
     """Ошибки, при которых бот в принципе не может писать в чат.
 
     CHANNEL_PRIVATE (бот кикнут/нет доступа), CHAT_WRITE_FORBIDDEN (нет прав),
+    CHAT_SEND_PLAIN_FORBIDDEN (запрещены обычные сообщения),
     USER_BANNED_IN_CHANNEL (забанен), CHAT_ADMIN_REQUIRED. Это не ошибки кода,
     поэтому в администраторский чат они не отправляются.
     """
@@ -127,7 +129,6 @@ async def notify_cannot_send(client, message, error: Exception, lang: str = "en"
     Порядок: личное сообщение → общий (General) топик → только лог.
     """
     key = "cannot_send_topic" if is_topic_closed(error) else "cannot_send_chat"
-    text = _(key, lang)
 
     # 1. Личное сообщение инициатору — на языке его клиента Telegram
     user = getattr(message, "from_user", None)
@@ -143,7 +144,7 @@ async def notify_cannot_send(client, message, error: Exception, lang: str = "en"
     chat = getattr(message, "chat", None)
     in_topic = getattr(message, "message_thread_id", None) is not None
     if chat is not None and (in_topic or getattr(chat, "is_forum", False)):
-        if await _send_to_general(client, chat.id, text):
+        if await _send_to_general(client, chat.id, _(key, lang)):
             return
 
     # 3. Ничего не остаётся — уже залогировано выше
