@@ -69,9 +69,17 @@ def is_wait_error(error: Exception) -> bool:
 
 
 def _wait_seconds(error: Exception) -> int:
-    """Извлекает количество секунд ожидания из FLOOD_WAIT/SLOWMODE_WAIT."""
+    """Извлекает количество секунд ожидания из FLOOD_WAIT/SLOWMODE_WAIT.
+
+    Начиная с kurigram 2.2.27 параметр ошибки хранится в ``parameter``
+    (``RPCError.value`` стал вычисляемым свойством), но для совместимости
+    со старыми версиями поддерживаем и ``value``.
+    """
+    value = getattr(error, "parameter", None)
+    if value is None:
+        value = getattr(error, "value", None)
     try:
-        return int(getattr(error, "value", 0) or 0)
+        return int(value or 0)
     except (TypeError, ValueError):
         return 0
 
